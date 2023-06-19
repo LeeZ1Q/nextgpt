@@ -1,19 +1,35 @@
 'use client';
 
+import { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+
 import { IconButton } from './button';
 
 import { SettingsIcon } from '../icons/settings';
 import { AddIcon } from '../icons/add';
-import { ChatIcon } from '../icons/chat';
 import { ExportIcon } from '../icons/export';
 import { GithubIcon } from '../icons/github';
 import { GPTIcon } from '../icons/gpt';
 import { UserIcon } from '../icons/user';
 import { SendIcon } from '../icons/send';
 import { MaxIcon } from '../icons/max';
+import { DeleteIcon } from '../icons/delete';
+import { LoadingIcon } from '../icons/loading';
+
+import { Message, useChatStore } from '../store';
+import Link from 'next/link';
+
+export function Avatar(props: { role: Message['role'] }) {
+	if (props.role === 'assistant') {
+		return <GPTIcon className='h-6 w-6' />;
+	}
+
+	return <UserIcon className='h-6 w-6' />;
+}
 
 export function ChatItem(props: {
-	onClick: () => void;
+	onClick?: () => void;
+	onDelete?: () => void;
 	title: string;
 	count: number;
 	time: string;
@@ -21,36 +37,49 @@ export function ChatItem(props: {
 }) {
 	return (
 		<div
-			className={`flex-wrap px-4 py-2  my-1 cursor-pointer rounded-2xl bg-slate-950 hover:bg-slate-600 ${
+			className={`group flex-wrap px-4 py-2  my-1 cursor-pointer rounded-2xl bg-slate-950 hover:bg-gray-900 ${
 				props.selected ? ' border-2 border-slate-400' : ''
 			}`}
+			onClick={props.onClick}
 		>
-			<div className='flex text-neutral-300 h-6'>{props.title}</div>
+			<div className='flex'>
+				<div className='flex text-neutral-300 h-6'>{props.title}</div>
+				<DeleteIcon
+					className='h-5 w-5 opacity-0 group-hover:opacity-100 ml-auto text-stone-400 hover:text-stone-300'
+					onClick={props.onDelete}
+				/>
+			</div>
 			<div className='flex'>
 				<div className='text-sm text-gray-500'>{props.count} 条对话</div>
-				<div className='text-sm text-gray-500 ml-auto'>{props.time}</div>
+				<div className='text-xs text-gray-500 mt-0.5 ml-auto '>
+					{props.time}
+				</div>
 			</div>
 		</div>
 	);
 }
 
 export function ChatList() {
-	const listData = new Array(5).fill({
-		title: '对话标题',
-		count: 10,
-		time: new Date().toLocaleString().slice(0, -3),
-	});
-
-	const selectedIndex = 0;
+	const [sessions, selectedIndex, selectSession, removeSession] = useChatStore(
+		(state) => [
+			state.sessions,
+			state.currentSessionIndex,
+			state.selectSession,
+			state.removeSession,
+		]
+	);
 
 	return (
-		<div className='flex flex-col w-64 h-full my-2'>
-			{listData.map((item, index) => (
+		<div className='flex flex-col w-56 h-full my-2'>
+			{sessions.map((item, index) => (
 				<ChatItem
+					title={item.topic}
+					time={item.lastUpdate}
+					count={item.messages.length}
 					key={index}
-					{...item}
 					selected={index === selectedIndex}
-					onClick={() => {}}
+					onClick={() => selectSession(index)}
+					onDelete={() => removeSession(index)}
 				/>
 			))}
 		</div>
@@ -58,29 +87,70 @@ export function ChatList() {
 }
 
 export function Chat() {
-	const messages = [
-		{
-			role: 'user',
-			content: '这是一条消息',
-			date: new Date().toLocaleString(),
-		},
-		{
-			role: 'bot',
-			content: '这是一条回复'.repeat(10),
-			date: new Date().toLocaleString(),
-		},
-	];
+	type RenderMessage = Message & { preview?: boolean };
 
-	const title = '对话标题';
-	const count = 10;
+	const session = useChatStore((state) => state.currentSession());
+	const [userInput, setUserInput] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
+
+	const onUserInput = useChatStore((state) => state.onUserInput);
+	const onUserSubmit = () => {
+		if (userInput.length <= 0) return;
+		setIsLoading(true);
+		onUserInput(userInput).then(() => setIsLoading(false));
+		setUserInput('');
+	};
+
+	const onInputKeyDown = (e: KeyboardEvent) => {
+		if (e.key === 'Enter' && (e.shiftKey || e.ctrlKey || e.metaKey)) {
+			onUserSubmit();
+			e.preventDefault();
+		}
+	};
+
+	const latestMessageRef = useRef<HTMLDivElement>(null);
+
+	const messages = (session.messages as RenderMessage[])
+		.concat(
+			isLoading
+				? [
+						{
+							role: 'assistant',
+							content: '……',
+							date: new Date().toLocaleString(),
+							preview: true,
+						},
+				  ]
+				: []
+		)
+		.concat(
+			userInput.length > 0
+				? [
+						{
+							role: 'user',
+							content: userInput,
+							date: new Date().toLocaleString(),
+							preview: true,
+						},
+				  ]
+				: []
+		);
+
+	useEffect(() => {
+		latestMessageRef.current?.scrollIntoView(false);
+	});
 
 	return (
-		<div className='flex flex-col flex-1'>
+		<div className='h-5/6 flex flex-col flex-1'>
 			{/* header */}
 			<div className='flex items-center justify-between px-4 py-2 '>
 				<div className='flex-wrap items-center '>
-					<div className='text-lg font-bold text-neutral-300'>{title}</div>
-					<div className='text-sm text-gray-500'>{count} 条对话</div>
+					<div className='text-lg font-bold text-neutral-300'>
+						{session.topic}
+					</div>
+					<div className='text-sm text-gray-500'>
+						{session.messages.length}条对话
+					</div>
 				</div>
 				<div className='flex'>
 					<IconButton
@@ -95,48 +165,69 @@ export function Chat() {
 			</div>
 
 			{/* body */}
-			<div className='flex-col flex-1 overflow-y-auto'>
+			<div className='scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-slate-950  placeholder:flex-col flex-1 overflow-y-auto'>
 				{messages.map((message, index) => {
 					const isUser = message.role === 'user';
-
 					return (
 						<div
 							key={index}
-							className={`flex flex-col mb-2`}
+							className='flex flex-row mb-2'
 						>
 							{/* container */}
-							<div className='flex items-start'>
+							<div className={`flex items-start `}>
 								{/* avatar */}
 								<div className='w-8 h-8 m-2'>
-									{message.role === 'user' ? <UserIcon className = 'h-6 w-6'/> : <GPTIcon className = 'h-6 w-6'/>}
+									<Avatar role={message.role} />
+									{message.preview && (
+										<div className='m-1 font-bold text-sm text-neutral-300 '>
+											···
+										</div>
+									)}
 								</div>
+
 								{/* content */}
-								<div className='mr-8 my-1 flex flex-col  text-neutral-300'>
-									{message.content}
-									{!isUser && (
-									<div className='ml-auto text-sm text-gray-500'>
-										{message.date}
-									</div>
-								)}
+								<div className='mr-8 my-1 flex flex-col'>
+									{message.preview && !isUser ? (
+										<LoadingIcon className='h-5 w-5' />
+									) : (
+										<div className='prose p-2 mb-2 border-2 border-gray-700 rounded-lg text-neutral-300 bg-slate-800'>
+											<ReactMarkdown>{message.content}</ReactMarkdown>
+										</div>
+									)}
+									{!isUser && !message.preview && (
+										<div className=' ml-auto text-xs text-gray-500 '>
+											{message.date}
+										</div>
+									)}
 								</div>
 							</div>
 						</div>
 					);
 				})}
+				<span
+					ref={latestMessageRef}
+					style={{ opacity: 0 }}
+				>
+					-
+				</span>
 			</div>
 
 			{/* input */}
-			<div className='flex items-center px-4 py-2 border-t rounded-xl border-gray-700'>
+			<div className='flex flex-col items-center px-4 py-2 border-t rounded-xl border-gray-700'>
 				<div className='relative w-full'>
 					<textarea
-						className='w-full h-24 p-2 bg-slate-950 border border-gray-700 rounded-xl focus:border-slate-400'
-						placeholder='请输入消息'
+						className='w-full h-24 p-2 resize-none text-neutral-300 bg-slate-950 border border-gray-700 rounded-xl focus:border-slate-400'
+						placeholder='请输入消息，Ctrl + Enter 发送'
+						rows={3}
+						onInput={(e) => setUserInput(e.currentTarget.value)}
+						value={userInput}
+						onKeyDown={(e) => onInputKeyDown(e as any)}
 					/>
 					<IconButton
-					 	className='absolute bottom-2 right-0 m-2 text-neutral-300 bg-cyan-800 rounded-lg'
-						icon={<SendIcon className='mx-1 h-5 w-5 text-neutral-300'/>}
-						onClick={() => {}}
+						className='text-sm absolute bottom-2 right-0 m-2 text-neutral-300 bg-cyan-800 rounded-lg'
+						icon={<SendIcon className='m-1.5 h-5 w-5 text-neutral-300' />}
 						text='发送'
+						onClick={onUserSubmit}
 					/>
 				</div>
 			</div>
@@ -145,46 +236,48 @@ export function Chat() {
 }
 
 export function Home() {
+	const [createNewSession] = useChatStore((state) => [state.newSession]);
+
 	return (
 		<div className='flex items-center justify-center h-screen'>
-		<div className='flex mx-auto max-w-screen-lg min-w-min  w-90vw h-90vh bg-slate-950 border-2 border-gray-700 rounded-3xl shadow-sm overflow-hidden '>
-			{/* siderbar*/}
-			<div className='max-w-xs p-5 bg-slate-800 flex flex-col shadow-inner'>
-				{/* header */}
-				<div className='flex items-center mb-2'>
-					<GPTIcon className='h-8 w-8' />
-					<div className='text-lg font-bold ml-1 text-neutral-300'>
-						Next GPT
+			<div className='w-5/6 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-slate-950 border-2 border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
+				{/* siderbar*/}
+				<div className='p-5 bg-slate-800 flex flex-col shadow-inner'>
+					{/* header */}
+					<div className='flex items-center mb-2'>
+						<GPTIcon className='h-8 w-8' />
+						<div className='text-lg font-bold ml-1 text-neutral-300'>
+							Next GPT
+						</div>
+						<IconButton
+							icon={<AddIcon className='h-6 w-6' />}
+							onClick={createNewSession}
+							className=' text-neutral-300 bg-slate-900 rounded-lg text-sm ml-auto'
+							text='新对话'
+						/>
+					</div>
+					<ChatList />
+					<div className='flex items-center '>
+						<IconButton
+							icon={<SettingsIcon className='m-2 h-5 w-5 text-stone-400' />}
+							onClick={() => {}}
+						/>
+
+						<Link
+							href='https://github.com/LeeZ1Q'
+							target='_blank'
+						>
+							<IconButton
+								icon={<GithubIcon className='mr-2 h-6 w-6 text-stone-400' />}
+							/>
+						</Link>
 					</div>
 				</div>
-				{/* body */}
-				<ChatList />
-				{/* footer */}
-				<div className='flex'>
-					<IconButton
-						icon={<SettingsIcon className='m-2 h-5 w-5 text-stone-400' />}
-						onClick={() => {}}
-					/>
-
-					<IconButton
-						icon={<GithubIcon className='mr-2 h-6 w-6 text-stone-400' />}
-						onClick={() => {}}
-					/>
-
-					<IconButton
-						icon={<AddIcon className='h-6 w-6' />}
-						onClick={() => {}}
-						className=' text-neutral-300 bg-slate-900 rounded-lg text-md ml-auto'
-						text='新对话'
-					/>
+				{/* main */}
+				<div className='flex flex-col flex-1'>
+					<Chat key='chat' />
 				</div>
 			</div>
-
-			{/* main */}
-			<div className='flex flex-col flex-1'>
-				<Chat />
-			</div>
-		</div>
 		</div>
 	);
 }
