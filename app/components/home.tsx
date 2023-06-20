@@ -1,7 +1,11 @@
 'use client';
 
-import { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import 'katex/dist/katex.min.css';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeHighlight from 'rehype-highlight';
 
 import { IconButton } from './button';
 
@@ -18,6 +22,18 @@ import { LoadingIcon } from '../icons/loading';
 
 import { Message, useChatStore } from '../store';
 import Link from 'next/link';
+
+export function Markdown(props: { content: string }) {
+	return (
+		<ReactMarkdown
+			remarkPlugins={[remarkMath]}
+			rehypePlugins={[rehypeKatex, rehypeHighlight]}
+			className='prose prose-pre:bg-slate-900 prose-p:m-1 prose-pre:m-0 text-neutral-300 prose-code:text-neutral-200 prose-pre:scrollbar-thin prose-pre:scrollbar-thumb-gray-700 prose-pre:scrollbar-track-slate-800'
+		>
+			{props.content}
+		</ReactMarkdown>
+	);
+}
 
 export function Avatar(props: { role: Message['role'] }) {
 	if (props.role === 'assistant') {
@@ -117,7 +133,7 @@ export function Chat() {
 						{
 							role: 'assistant',
 							content: '……',
-							date: new Date().toLocaleString(),
+							date: new Date().toLocaleString().slice(0, -3),
 							preview: true,
 						},
 				  ]
@@ -129,7 +145,7 @@ export function Chat() {
 						{
 							role: 'user',
 							content: userInput,
-							date: new Date().toLocaleString(),
+							date: new Date().toLocaleString().slice(0, -3),
 							preview: true,
 						},
 				  ]
@@ -137,7 +153,10 @@ export function Chat() {
 		);
 
 	useEffect(() => {
-		latestMessageRef.current?.scrollIntoView(false);
+		latestMessageRef.current?.scrollIntoView({
+			behavior: 'smooth',
+			block: 'end',
+		});
 	});
 
 	return (
@@ -174,9 +193,9 @@ export function Chat() {
 							className='flex flex-row mb-2'
 						>
 							{/* container */}
-							<div className={`flex items-start `}>
+							<div className='flex items-start'>
 								{/* avatar */}
-								<div className='w-8 h-8 m-2'>
+								<div className='w-8 h-8 mx-2 mt-2 p-1'>
 									<Avatar role={message.role} />
 									{message.preview && (
 										<div className='m-1 font-bold text-sm text-neutral-300 '>
@@ -186,12 +205,13 @@ export function Chat() {
 								</div>
 
 								{/* content */}
-								<div className='mr-8 my-1 flex flex-col'>
-									{message.preview && !isUser ? (
+								<div className='max-w-fit mr-8 my-1 flex flex-col'>
+									{(message.preview || message.content.length === 0) &&
+									!isUser ? (
 										<LoadingIcon className='h-5 w-5' />
 									) : (
-										<div className='prose p-2 mb-2 border-2 border-gray-700 rounded-lg text-neutral-300 bg-slate-800'>
-											<ReactMarkdown>{message.content}</ReactMarkdown>
+										<div className='p-2 mb-2 border-2 border-gray-700 rounded-lg bg-slate-800'>
+											<Markdown content={message.content} />
 										</div>
 									)}
 									{!isUser && !message.preview && (
@@ -214,9 +234,9 @@ export function Chat() {
 
 			{/* input */}
 			<div className='flex flex-col items-center px-4 py-2 border-t rounded-xl border-gray-700'>
-				<div className='relative w-full'>
+				<div className='w-full flex-wrap'>
 					<textarea
-						className='w-full h-24 p-2 resize-none text-neutral-300 bg-slate-950 border border-gray-700 rounded-xl focus:border-slate-400'
+						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none text-neutral-300 bg-slate-950 border border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
 						placeholder='请输入消息，Ctrl + Enter 发送'
 						rows={3}
 						onInput={(e) => setUserInput(e.currentTarget.value)}
@@ -224,9 +244,8 @@ export function Chat() {
 						onKeyDown={(e) => onInputKeyDown(e as any)}
 					/>
 					<IconButton
-						className='text-sm absolute bottom-2 right-0 m-2 text-neutral-300 bg-cyan-800 rounded-lg'
-						icon={<SendIcon className='m-1.5 h-5 w-5 text-neutral-300' />}
-						text='发送'
+						className=' ml-auto p-0.5 text-sm m-0.5 text-neutral-300 bg-slate-800 rounded-lg'
+						icon={<SendIcon className='m-1.5 h-5 w-5' />}
 						onClick={onUserSubmit}
 					/>
 				</div>
@@ -237,12 +256,13 @@ export function Chat() {
 
 export function Home() {
 	const [createNewSession] = useChatStore((state) => [state.newSession]);
+	const loading = !useChatStore?.persist?.hasHydrated();
 
 	return (
 		<div className='flex items-center justify-center h-screen'>
-			<div className='w-5/6 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-slate-950 border-2 border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
+			<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-slate-950 border-2 border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
 				{/* siderbar*/}
-				<div className='p-5 bg-slate-800 flex flex-col shadow-inner'>
+				<div className='min-w-fit scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-slate-800 overflow-y-auto  p-5 bg-slate-800 flex flex-col shadow-inner'>
 					{/* header */}
 					<div className='flex items-center mb-2'>
 						<GPTIcon className='h-8 w-8' />

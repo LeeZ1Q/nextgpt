@@ -106,8 +106,8 @@ export const useChatStore = create<ChatStore>()(
 
 			newSession() {
 				set((state) => ({
-					currentSessionIndex: state.sessions.length,
-					sessions: state.sessions.concat([createEmptySession()]),
+					currentSessionIndex: 0,
+					sessions: [createEmptySession()].concat(state.sessions),
 				}));
 			},
 
@@ -135,7 +135,7 @@ export const useChatStore = create<ChatStore>()(
 				const message: Message = {
 					role: 'user',
 					content,
-					date: new Date().toLocaleString(),
+					date: new Date().toLocaleString().slice(0, -3),
 				};
 
 				const messages = get().currentSession().messages.concat(message);
@@ -145,7 +145,7 @@ export const useChatStore = create<ChatStore>()(
 
 				get().onNewMessage({
 					...res.choices[0].message!,
-					date: new Date().toLocaleString(),
+					date: new Date().toLocaleString().slice(0, -3),
 				});
 			},
 
@@ -160,7 +160,7 @@ export const useChatStore = create<ChatStore>()(
 
 				requestWithPrompt(
 					session.messages,
-					'简明扼要地 10 字以内总结主题'
+					'Summarize the tittle in 3 words in Chinese',
 				).then((res) => {
 					get().updateCurrentSession(
 						(session) => (session.topic = trimTopic(res))
