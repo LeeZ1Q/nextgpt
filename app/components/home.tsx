@@ -187,6 +187,7 @@ export function Chat() {
 			<div className='scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-slate-950  placeholder:flex-col flex-1 overflow-y-auto'>
 				{messages.map((message, index) => {
 					const isUser = message.role === 'user';
+
 					return (
 						<div
 							key={index}
@@ -197,7 +198,7 @@ export function Chat() {
 								{/* avatar */}
 								<div className='w-8 h-8 mx-2 mt-2 p-1'>
 									<Avatar role={message.role} />
-									{message.preview && (
+									{(message.preview || message.streaming) && (
 										<div className='m-1 font-bold text-sm text-neutral-300 '>
 											···
 										</div>
@@ -206,7 +207,7 @@ export function Chat() {
 
 								{/* content */}
 								<div className='max-w-fit mr-8 my-1 flex flex-col'>
-									{(message.preview || message.content.length === 0) &&
+									{(message.preview || message.content?.length === 0) &&
 									!isUser ? (
 										<LoadingIcon className='h-5 w-5' />
 									) : (

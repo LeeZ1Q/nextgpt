@@ -1056,6 +1056,11 @@
   "resolved" "https://registry.npmmirror.com/esutils/-/esutils-2.0.3.tgz"
   "version" "2.0.3"
 
+"eventsource-parser@^0.1.0":
+  "integrity" "sha512-M9QjFtEIkwytUarnx113HGmgtk52LSn3jNAtnWKi3V+b9rqSfQeVdLsaD5AG/O4IrGQwmAAHBIsqbmURPTd2rA=="
+  "resolved" "https://registry.npmmirror.com/eventsource-parser/-/eventsource-parser-0.1.0.tgz"
+  "version" "0.1.0"
+
 "execa@^5.0.0":
   "integrity" "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg=="
   "resolved" "https://registry.npmmirror.com/execa/-/execa-5.1.1.tgz"

@@ -2,15 +2,27 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { type ChatCompletionResponseMessage } from 'openai';
-import { requestChat, requestWithPrompt } from './requests';
+import { requestChat, requestChatStream, requestWithPrompt } from './requests';
 import { trimTopic } from './utils';
 
 export type Message = ChatCompletionResponseMessage & {
 	date: string;
+	streaming?: boolean;
+	isError?: boolean;
+	id?: number;
 };
 
+export enum SubmitKey {
+	Enter = 'Enter',
+	CtrlEnter = 'Ctrl + Enter',
+	ShiftEnter = 'Shift + Enter',
+	AltEnter = 'Alt + Enter',
+}
 interface ChatConfig {
-	maxToken: number;
+	maxToken?: number;
+	historyMessageCount: number; // -1 means all
+	sendBotMessages: boolean; // send bot's message or not
+	submitKey: SubmitKey;
 }
 
 interface ChatStat {
@@ -20,6 +32,7 @@ interface ChatStat {
 }
 
 interface ChatSession {
+	id: number;
 	topic: string;
 	memoryPrompt: string;
 	messages: Message[];
@@ -34,6 +47,7 @@ function createEmptySession(): ChatSession {
 	const createDate = new Date().toLocaleString().slice(0, -3);
 
 	return {
+		id: Date.now(),
 		topic: DEFAULT_TOPIC,
 		memoryPrompt: '',
 		messages: [
@@ -72,7 +86,6 @@ export const useChatStore = create<ChatStore>()(
 		(set, get) => ({
 			sessions: [createEmptySession()],
 			currentSessionIndex: 0,
-
 			selectSession(index: number) {
 				set({
 					currentSessionIndex: index,
@@ -119,8 +132,9 @@ export const useChatStore = create<ChatStore>()(
 					index = Math.min(sessions.length - 1, Math.max(0, index));
 					set(() => ({ currentSessionIndex: index }));
 				}
+				const session = sessions[index];
 
-				return sessions[index];
+				return session;
 			},
 
 			onNewMessage(message) {
@@ -145,7 +159,7 @@ export const useChatStore = create<ChatStore>()(
 
 				get().onNewMessage({
 					...res.choices[0].message!,
-					date: new Date().toLocaleString().slice(0, -3),
+					date: new Date().toLocaleString(),
 				});
 			},
 
@@ -160,7 +174,7 @@ export const useChatStore = create<ChatStore>()(
 
 				requestWithPrompt(
 					session.messages,
-					'Summarize the tittle in 3 words in Chinese',
+					'Summarize the tittle in 3 words in Chinese'
 				).then((res) => {
 					get().updateCurrentSession(
 						(session) => (session.topic = trimTopic(res))
