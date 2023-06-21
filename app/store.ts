@@ -8,8 +8,8 @@ import { trimTopic } from './utils';
 export type Message = ChatCompletionResponseMessage & {
 	date: string;
 	streaming?: boolean;
-	isError?: boolean;
-	id?: number;
+	// isError?: boolean;
+	// id?: number;
 };
 
 export enum SubmitKey {
@@ -67,6 +67,7 @@ function createEmptySession(): ChatSession {
 }
 
 interface ChatStore {
+	config: ChatConfig;
 	sessions: ChatSession[];
 	currentSessionIndex: number;
 	removeSession: (index: number) => void;
@@ -79,6 +80,13 @@ interface ChatStore {
 	summarizeSession: () => void;
 	updateStat: (message: Message) => void;
 	updateCurrentSession: (updater: (session: ChatSession) => void) => void;
+	updateMessage: (
+		sessionIndex: number,
+		messageIndex: number,
+		updater: (message?: Message) => void
+	) => void;
+	getConfig: () => ChatConfig;
+	updateConfig: (updater: (config: ChatConfig) => void) => void;
 }
 
 export const useChatStore = create<ChatStore>()(
@@ -86,6 +94,21 @@ export const useChatStore = create<ChatStore>()(
 		(set, get) => ({
 			sessions: [createEmptySession()],
 			currentSessionIndex: 0,
+			config: {
+				historyMessageCount: 5,
+				sendBotMessages: false as boolean,
+				submitKey: SubmitKey.CtrlEnter,
+			},
+
+			getConfig() {
+				return get().config;
+			},
+
+			updateConfig(updater) {
+				const config = get().config;
+				updater(config);
+				set(() => ({ config }));
+			},
 			selectSession(index: number) {
 				set({
 					currentSessionIndex: index,
@@ -155,12 +178,58 @@ export const useChatStore = create<ChatStore>()(
 				const messages = get().currentSession().messages.concat(message);
 				get().onNewMessage(message);
 
-				const res = await requestChat(messages);
+				// 	const res = await requestChat(messages);
 
-				get().onNewMessage({
-					...res.choices[0].message!,
+				// 	get().onNewMessage({
+				// 		...res.choices[0].message!,
+				// 		date: new Date().toLocaleString(),
+				// 	});
+				// },
+
+				const botMessage: Message = {
+					content: '',
+					role: 'assistant',
 					date: new Date().toLocaleString(),
+					streaming: true,
+				};
+
+				get().updateCurrentSession((session) => {
+					session.messages.push(botMessage);
 				});
+
+				const fiveMessages = messages.slice(-5);
+
+				requestChatStream(fiveMessages, {
+					onMessage(content, done) {
+						if (done) {
+							botMessage.streaming = false;
+							get().updateStat(botMessage);
+							get().summarizeSession();
+						} else {
+							botMessage.content = content;
+							set(() => ({}));
+						}
+					},
+					onError(error) {
+						botMessage.content = '出错了，稍后重试吧';
+						botMessage.streaming = false;
+						set(() => ({}));
+					},
+					filterBot: !get().config.sendBotMessages,
+				});
+			},
+
+			updateMessage(
+				sessionIndex: number,
+				messageIndex: number,
+				updater: (message?: Message) => void
+			) {
+				const sessions = get().sessions;
+				const session = sessions.at(sessionIndex);
+				const messages = session?.messages;
+				console.log(sessions, messages?.length, messages?.at(messageIndex));
+				updater(messages?.at(messageIndex));
+				set(() => ({ sessions }));
 			},
 
 			onBotResponse(message) {

@@ -1,22 +1,21 @@
-import type { ChatRequest } from '../chat/typing';
 import { createParser } from 'eventsource-parser';
 import { NextRequest } from 'next/server';
 
+const isPord = process.env.NODE_ENV === 'production';
 const apiKey = process.env.OPENAI_API_KEY;
 
 async function createStream(payload: ReadableStream<Uint8Array>) {
 	const encoder = new TextEncoder();
 	const decoder = new TextDecoder();
 
-	console.log('[ChatStream]', payload);
-
-	const res = await fetch('https://api.openai.com/v1/chat/completions', {
+	const res = await fetch('https://api.openai-proxy.com/v1/chat/completions', {
 		headers: {
 			'Content-Type': 'application/json',
 			Authorization: `Bearer ${apiKey}`,
 		},
 		method: 'POST',
 		body: payload,
+		duplex: 'half',
 	});
 
 	const stream = new ReadableStream({
@@ -52,6 +51,7 @@ async function createStream(payload: ReadableStream<Uint8Array>) {
 export async function POST(req: NextRequest) {
 	try {
 		const stream = await createStream(req.body!);
+
 		return new Response(stream);
 	} catch (error) {
 		console.error('[Chat Stream]', error);

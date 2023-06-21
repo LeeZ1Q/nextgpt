@@ -20,7 +20,7 @@ import { MaxIcon } from '../icons/max';
 import { DeleteIcon } from '../icons/delete';
 import { LoadingIcon } from '../icons/loading';
 
-import { Message, useChatStore } from '../store';
+import { Message, SubmitKey, useChatStore } from '../store';
 import Link from 'next/link';
 
 export function Markdown(props: { content: string }) {

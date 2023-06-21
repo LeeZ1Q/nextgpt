@@ -37,10 +37,10 @@ export async function requestChatStream(
 	const req = makeRequestParam(messages, true);
 
 	const res = await fetch('/api/chat-stream', {
-		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 		},
+		method: 'POST',
 		body: JSON.stringify(req),
 	});
 
