@@ -210,6 +210,7 @@ export const useChatStore = create<ChatStore>()(
 							set(() => ({}));
 						}
 					},
+					
 					onError(error) {
 						botMessage.content = '出错了，稍后重试吧';
 						botMessage.streaming = false;

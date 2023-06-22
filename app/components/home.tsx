@@ -8,6 +8,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 
 import { IconButton } from './button';
+import { Card, List, ListItem } from './uilib';
 
 import { SettingsIcon } from '../icons/settings';
 import { AddIcon } from '../icons/add';
@@ -259,6 +260,9 @@ export function Home() {
 	const [createNewSession] = useChatStore((state) => [state.newSession]);
 	const loading = !useChatStore?.persist?.hasHydrated();
 
+	// settings
+	const [openSettings, setOpenSettings] = useState(false);
+
 	return (
 		<div className='flex items-center justify-center h-screen'>
 			<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-slate-950 border-2 border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
@@ -281,7 +285,7 @@ export function Home() {
 					<div className='flex items-center '>
 						<IconButton
 							icon={<SettingsIcon className='m-2 h-5 w-5 text-stone-400' />}
-							onClick={() => {}}
+							onClick={() => setOpenSettings(!openSettings)}
 						/>
 
 						<Link
@@ -296,9 +300,64 @@ export function Home() {
 				</div>
 				{/* main */}
 				<div className='flex flex-col flex-1'>
-					<Chat key='chat' />
+					{openSettings ? <Settings /> : <Chat key='chat' />}
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export function Settings() {
+	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+	const [config, updateConfig] = useChatStore((state) => [
+		state.config,
+		state.updateConfig,
+	]);
+
+	return (
+		<>
+			<div className=''>
+				<div>
+					<div className=''>设置</div>
+					<div className=''>设置选项</div>
+				</div>
+			</div>
+			<div className=''>
+				<List>
+					<ListItem>
+						<div className=''>发送键</div>
+						<div className=''>
+							<select
+								value={config.submitKey}
+								onChange={(e) => {
+									updateConfig(
+										(config) =>
+											(config.submitKey = e.target.value as any as SubmitKey)
+									);
+								}}
+							>
+								{Object.entries(SubmitKey).map(([k, v]) => (
+									<option
+										value={k}
+										key={v}
+									>
+										{v}
+									</option>
+								))}
+							</select>
+						</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>最大记忆历史消息数</div>
+						<div className=''>{config.historyMessageCount}</div>
+					</ListItem>
+
+					<ListItem>
+						<div className=''>发送机器人回复消息</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+				</List>
+			</div>
+		</>
 	);
 }
