@@ -163,7 +163,7 @@ export function Chat() {
 	return (
 		<div className='h-5/6 flex flex-col flex-1'>
 			{/* header */}
-			<div className='flex items-center justify-between px-4 py-2 '>
+			<div className='flex items-center justify-between px-4 py-2'>
 				<div className='flex-wrap items-center '>
 					<div className='text-lg font-bold text-neutral-300'>
 						{session.topic}
@@ -308,7 +308,6 @@ export function Home() {
 }
 
 export function Settings() {
-	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 	const [config, updateConfig] = useChatStore((state) => [
 		state.config,
 		state.updateConfig,
@@ -316,8 +315,8 @@ export function Settings() {
 
 	return (
 		<>
-			<div className=''>
-				<div>
+			<div className='h-5/6 flex flex-col flex-1'>
+				<div className='flex items-center justify-between px-4 py-2'>
 					<div className=''>设置</div>
 					<div className=''>设置选项</div>
 				</div>
