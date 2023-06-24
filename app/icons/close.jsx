@@ -1,4 +1,4 @@
-export function DeleteIcon(props) {
+export function CloseIcon(props) {
 	const { className } = props;
 
 	return (
@@ -10,7 +10,7 @@ export function DeleteIcon(props) {
 		>
 			<path
 				fill='currentColor'
-				d='M7 21q-.825 0-1.413-.588T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.588 1.413T17 21H7ZM17 6H7v13h10V6ZM9 17h2V8H9v9Zm4 0h2V8h-2v9ZM7 6v13V6Z'
+				d='M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6L6.4 19Z'
 			></path>
 		</svg>
 	);

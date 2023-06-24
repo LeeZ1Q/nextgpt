@@ -18,8 +18,10 @@ import { GPTIcon } from '../icons/gpt';
 import { UserIcon } from '../icons/user';
 import { SendIcon } from '../icons/send';
 import { MaxIcon } from '../icons/max';
-import { DeleteIcon } from '../icons/delete';
+import { CloseIcon } from '../icons/close';
 import { LoadingIcon } from '../icons/loading';
+import { DeleteIcon } from '../icons/delete';
+import { ResetIcon } from '../icons/reset';
 
 import { Message, SubmitKey, useChatStore } from '../store';
 import Link from 'next/link';
@@ -61,8 +63,8 @@ export function ChatItem(props: {
 		>
 			<div className='flex'>
 				<div className='flex text-neutral-300 h-6'>{props.title}</div>
-				<DeleteIcon
-					className='h-5 w-5 opacity-0 group-hover:opacity-100 ml-auto text-stone-400 hover:text-stone-300'
+				<CloseIcon
+					className='m-1 h-4 w-4 opacity-0 group-hover:opacity-100 ml-auto text-stone-400 hover:text-stone-300'
 					onClick={props.onDelete}
 				/>
 			</div>
@@ -163,7 +165,7 @@ export function Chat() {
 	return (
 		<div className='h-5/6 flex flex-col flex-1'>
 			{/* header */}
-			<div className='flex items-center justify-between px-4 py-2'>
+			<div className='border-b rounded-md border-gray-700 flex items-center justify-between px-4 py-2'>
 				<div className='flex-wrap items-center '>
 					<div className='text-lg font-bold text-neutral-300'>
 						{session.topic}
@@ -172,20 +174,20 @@ export function Chat() {
 						{session.messages.length}条对话
 					</div>
 				</div>
-				<div className='flex'>
+				<div className='flex text-stone-400'>
 					<IconButton
-						icon={<ExportIcon className='mx-2 h-5 w-5 text-stone-400' />}
+						icon={<ExportIcon className='mx-2 h-5 w-5 ' />}
 						onClick={() => {}}
 					/>
 					<IconButton
-						icon={<MaxIcon className='mx-2 h-5 w-5 text-stone-400' />}
+						icon={<MaxIcon className='mx-2 h-5 w-5' />}
 						onClick={() => {}}
 					/>
 				</div>
 			</div>
 
 			{/* body */}
-			<div className='scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-slate-950  placeholder:flex-col flex-1 overflow-y-auto'>
+			<div className='scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-slate-950  flex-col flex-1 overflow-y-auto'>
 				{messages.map((message, index) => {
 					const isUser = message.role === 'user';
 
@@ -235,7 +237,7 @@ export function Chat() {
 			</div>
 
 			{/* input */}
-			<div className='flex flex-col items-center px-4 py-2 border-t rounded-xl border-gray-700'>
+			<div className='flex flex-col items-center px-4 py-2 border-t rounded-md border-gray-700'>
 				<div className='w-full flex-wrap'>
 					<textarea
 						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none text-neutral-300 bg-slate-950 border border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
@@ -282,9 +284,9 @@ export function Home() {
 						/>
 					</div>
 					<ChatList />
-					<div className='flex items-center '>
+					<div className='flex items-center text-stone-400'>
 						<IconButton
-							icon={<SettingsIcon className='m-2 h-5 w-5 text-stone-400' />}
+							icon={<SettingsIcon className='m-2 h-5 w-5' />}
 							onClick={() => setOpenSettings(!openSettings)}
 						/>
 
@@ -292,9 +294,7 @@ export function Home() {
 							href='https://github.com/LeeZ1Q'
 							target='_blank'
 						>
-							<IconButton
-								icon={<GithubIcon className='mr-2 h-6 w-6 text-stone-400' />}
-							/>
+							<IconButton icon={<GithubIcon className='mr-2 h-6 w-6' />} />
 						</Link>
 					</div>
 				</div>
@@ -314,19 +314,71 @@ export function Settings() {
 	]);
 
 	return (
-		<>
-			<div className='h-5/6 flex flex-col flex-1'>
-				<div className='flex items-center justify-between px-4 py-2'>
-					<div className=''>设置</div>
-					<div className=''>设置选项</div>
+		<div className='h-5/6 flex flex-col flex-1'>
+			<div className='border-b rounded-md border-gray-700 flex items-center justify-between px-4 py-2'>
+				<div className='flex-wrap items-center '>
+					<div className='text-lg font-bold text-neutral-300'>设置</div>
+					<div className='text-sm text-gray-500'>设置选项</div>
+				</div>
+				<div className='flex text-stone-400'>
+					<IconButton
+						icon={<DeleteIcon className='mx-2 h-5 w-5' />}
+						onClick={() => {}}
+					/>
+					<IconButton
+						icon={<ResetIcon className='mx-2 h-5 w-5' />}
+						onClick={() => {}}
+					/>
+					<IconButton
+						icon={<CloseIcon className='mx-2 h-5 w-5' />}
+						onClick={() => {}}
+					/>
 				</div>
 			</div>
-			<div className=''>
+
+			<div className='m-5 text-neutral-300'>
 				<List>
+					<ListItem>
+						<div className=''>API Key</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>余额查询</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>Base URL</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>AI Model</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>Max Tokens</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>Temperature</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>Top P</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>Presence Penalty</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
+					<ListItem>
+						<div className=''>Frequency Penalty</div>
+						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+					</ListItem>
 					<ListItem>
 						<div className=''>发送键</div>
 						<div className=''>
 							<select
+								className='p-2 rounded-lg border border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-slate-950 '
 								value={config.submitKey}
 								onChange={(e) => {
 									updateConfig(
@@ -337,6 +389,7 @@ export function Settings() {
 							>
 								{Object.entries(SubmitKey).map(([k, v]) => (
 									<option
+										className='bg-slate-950'
 										value={k}
 										key={v}
 									>
@@ -357,6 +410,6 @@ export function Settings() {
 					</ListItem>
 				</List>
 			</div>
-		</>
+		</div>
 	);
 }
