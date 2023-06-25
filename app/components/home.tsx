@@ -25,13 +25,14 @@ import { ResetIcon } from '../icons/reset';
 
 import { Message, SubmitKey, useChatStore } from '../store';
 import Link from 'next/link';
+import ThemeSwitch from './themeSwitch';
 
 export function Markdown(props: { content: string }) {
 	return (
 		<ReactMarkdown
 			remarkPlugins={[remarkMath]}
 			rehypePlugins={[rehypeKatex, rehypeHighlight]}
-			className='prose prose-pre:bg-slate-900 prose-p:m-1 prose-pre:m-0 text-neutral-300 prose-code:text-neutral-200 prose-pre:scrollbar-thin prose-pre:scrollbar-thumb-gray-700 prose-pre:scrollbar-track-slate-800'
+			className='prose prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-p:m-1 prose-pre:m-0 text-neutral-300 prose-code:text-neutral-200 prose-pre:scrollbar-thin prose-pre:scrollbar-thumb-gray-700 prose-pre:scrollbar-track-slate-800'
 		>
 			{props.content}
 		</ReactMarkdown>
@@ -56,7 +57,7 @@ export function ChatItem(props: {
 }) {
 	return (
 		<div
-			className={`group flex-wrap px-4 py-2  my-1 cursor-pointer rounded-2xl bg-slate-950 hover:bg-gray-900 ${
+			className={`group flex-wrap px-4 py-2  my-1 cursor-pointer rounded-2xl bg-base hover:bg-gray-900 ${
 				props.selected ? ' border-2 border-slate-400' : ''
 			}`}
 			onClick={props.onClick}
@@ -194,7 +195,7 @@ export function Chat() {
 					return (
 						<div
 							key={index}
-							className='flex flex-row mb-2'
+							className='flex flex-col mb-2'
 						>
 							{/* container */}
 							<div className='flex items-start'>
@@ -209,12 +210,12 @@ export function Chat() {
 								</div>
 
 								{/* content */}
-								<div className='max-w-fit mr-8 my-1 flex flex-col'>
+								<div className='mr-8 my-1 flex flex-col'>
 									{(message.preview || message.content?.length === 0) &&
 									!isUser ? (
 										<LoadingIcon className='h-5 w-5' />
 									) : (
-										<div className='p-2 mb-2 border-2 border-gray-700 rounded-lg bg-slate-800'>
+										<div className='p-2 mb-2 border-2 border-gray-700 rounded-lg bg-base-100'>
 											<Markdown content={message.content} />
 										</div>
 									)}
@@ -240,7 +241,7 @@ export function Chat() {
 			<div className='flex flex-col items-center px-4 py-2 border-t-2 rounded-md border-gray-700'>
 				<div className='w-full flex-wrap'>
 					<textarea
-						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none text-neutral-300 bg-slate-950 border-2 border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
+						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none text-neutral-300 bg-base border-2 border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
 						placeholder='请输入消息，Ctrl + Enter 发送'
 						rows={3}
 						onInput={(e) => setUserInput(e.currentTarget.value)}
@@ -248,7 +249,7 @@ export function Chat() {
 						onKeyDown={(e) => onInputKeyDown(e as any)}
 					/>
 					<IconButton
-						className=' ml-auto p-0.5 text-sm m-0.5 text-neutral-300 bg-slate-800 rounded-lg'
+						className='ml-auto p-0.5 text-sm m-0.5 text-neutral-300 bg-base-100 rounded-lg'
 						icon={<SendIcon className='m-1.5 h-5 w-5' />}
 						onClick={onUserSubmit}
 					/>
@@ -267,9 +268,9 @@ export function Home() {
 
 	return (
 		<div className='flex items-center justify-center h-screen'>
-			<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-slate-950 border-2 border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
+			<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-base border-2 border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
 				{/* siderbar*/}
-				<div className='min-w-fit scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-slate-800 overflow-y-auto  p-5 bg-slate-800 flex flex-col shadow-inner'>
+				<div className='min-w-fit scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-slate-800 overflow-y-auto  p-5 bg-base-100 flex flex-col shadow-inner'>
 					{/* header */}
 					<div className='flex items-center mb-2'>
 						<GPTIcon className='h-8 w-8' />
@@ -279,7 +280,7 @@ export function Home() {
 						<IconButton
 							icon={<AddIcon className='h-6 w-6' />}
 							onClick={createNewSession}
-							className=' text-neutral-300 bg-slate-900 rounded-lg text-sm ml-auto'
+							className=' text-neutral-300 bg-slate-100 dark:bg-slate-900 rounded-lg text-sm ml-auto'
 							text='新对话'
 						/>
 					</div>
@@ -294,12 +295,13 @@ export function Home() {
 							href='https://github.com/LeeZ1Q'
 							target='_blank'
 						>
-							<IconButton icon={<GithubIcon className='mr-2 h-6 w-6' />} />
+							<IconButton icon={<GithubIcon className='h-6 w-6' />} />
 						</Link>
+						<ThemeSwitch />
 					</div>
 				</div>
 				{/* main */}
-				<div className='flex flex-col flex-1'>
+				<div className='min-w-[240px] flex flex-col flex-1'>
 					{openSettings ? <Settings /> : <Chat key='chat' />}
 				</div>
 			</div>
@@ -380,7 +382,7 @@ export function Settings() {
 						<div className='text-gray-400'>发送键</div>
 						<div className=''>
 							<select
-								className='pr-5 items-center p-2 rounded-lg border-2 border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-slate-950 '
+								className='pr-5 items-center p-2 rounded-lg border-2 border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
 								value={config.submitKey}
 								onChange={(e) => {
 									updateConfig(
@@ -391,7 +393,7 @@ export function Settings() {
 							>
 								{Object.entries(SubmitKey).map(([k, v]) => (
 									<option
-										className='bg-slate-950'
+										className='bg-base'
 										value={k}
 										key={v}
 									>
