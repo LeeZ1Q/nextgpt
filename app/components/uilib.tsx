@@ -7,9 +7,9 @@ export function ListItem(props: { children: JSX.Element[] }) {
 		throw Error('Only Support Two Children');
 	}
 
-	return <div className=''>{props.children}</div>;
+	return <div className='flex m-2 p-1 justify-between'>{props.children}</div>;
 }
 
 export function List(props: { children: JSX.Element[] }) {
-	return <div className=''>{props.children}</div>;
+	return <div className='items-center'>{props.children}</div>;
 }

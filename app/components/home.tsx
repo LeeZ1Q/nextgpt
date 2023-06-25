@@ -69,8 +69,8 @@ export function ChatItem(props: {
 				/>
 			</div>
 			<div className='flex'>
-				<div className='text-sm text-gray-500'>{props.count} 条对话</div>
-				<div className='text-xs text-gray-500 mt-0.5 ml-auto '>
+				<div className='text-sm text-gray-400'>{props.count} 条对话</div>
+				<div className='text-xs text-gray-400 mt-0.5 ml-auto '>
 					{props.time}
 				</div>
 			</div>
@@ -165,7 +165,7 @@ export function Chat() {
 	return (
 		<div className='h-5/6 flex flex-col flex-1'>
 			{/* header */}
-			<div className='border-b rounded-md border-gray-700 flex items-center justify-between px-4 py-2'>
+			<div className='border-b-2 rounded-md border-gray-700 flex items-center justify-between px-4 py-2'>
 				<div className='flex-wrap items-center '>
 					<div className='text-lg font-bold text-neutral-300'>
 						{session.topic}
@@ -237,10 +237,10 @@ export function Chat() {
 			</div>
 
 			{/* input */}
-			<div className='flex flex-col items-center px-4 py-2 border-t rounded-md border-gray-700'>
+			<div className='flex flex-col items-center px-4 py-2 border-t-2 rounded-md border-gray-700'>
 				<div className='w-full flex-wrap'>
 					<textarea
-						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none text-neutral-300 bg-slate-950 border border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
+						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none text-neutral-300 bg-slate-950 border-2 border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
 						placeholder='请输入消息，Ctrl + Enter 发送'
 						rows={3}
 						onInput={(e) => setUserInput(e.currentTarget.value)}
@@ -315,7 +315,7 @@ export function Settings() {
 
 	return (
 		<div className='h-5/6 flex flex-col flex-1'>
-			<div className='border-b rounded-md border-gray-700 flex items-center justify-between px-4 py-2'>
+			<div className='border-b-2 rounded-md border-gray-700 flex items-center justify-between px-4 py-2'>
 				<div className='flex-wrap items-center '>
 					<div className='text-lg font-bold text-neutral-300'>设置</div>
 					<div className='text-sm text-gray-500'>设置选项</div>
@@ -339,46 +339,48 @@ export function Settings() {
 			<div className='m-5 text-neutral-300'>
 				<List>
 					<ListItem>
-						<div className=''>API Key</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>API Key</div>
+						<div className='text-lg'>sk-****Elvt</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>余额查询</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>余额查询</div>
+						<div className='text-lg'>
+							本月已使用${}，订阅总额${}
+						</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>Base URL</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>Base URL</div>
+						<div className='text-lg'>https://api.openai.com</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>AI Model</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>AI Model</div>
+						<div className='text-lg'>gpt-3.5-turbo</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>Max Tokens</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>Max Tokens</div>
+						<div className='text-lg'>2048</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>Temperature</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>Temperature</div>
+						<div className='text-lg'>0.7</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>Top P</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>Top P</div>
+						<div className='text-lg'>1</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>Presence Penalty</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>Presence Penalty</div>
+						<div className='text-lg'>0</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>Frequency Penalty</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>Frequency Penalty</div>
+						<div className='text-lg'>0</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>发送键</div>
+						<div className='text-gray-400'>发送键</div>
 						<div className=''>
 							<select
-								className='p-2 rounded-lg border border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-slate-950 '
+								className='pr-5 items-center p-2 rounded-lg border-2 border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-slate-950 '
 								value={config.submitKey}
 								onChange={(e) => {
 									updateConfig(
@@ -400,13 +402,15 @@ export function Settings() {
 						</div>
 					</ListItem>
 					<ListItem>
-						<div className=''>最大记忆历史消息数</div>
-						<div className=''>{config.historyMessageCount}</div>
+						<div className='text-gray-400'>最大记忆历史消息数</div>
+						<div className='text-lg'>{config.historyMessageCount}</div>
 					</ListItem>
 
 					<ListItem>
-						<div className=''>发送机器人回复消息</div>
-						<div className=''>{config.sendBotMessages ? '是' : '否'}</div>
+						<div className='text-gray-400'>发送机器人回复消息</div>
+						<div className='text-lg'>
+							{config.sendBotMessages ? '是' : '否'}
+						</div>
 					</ListItem>
 				</List>
 			</div>
