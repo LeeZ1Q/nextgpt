@@ -32,7 +32,7 @@ export function Markdown(props: { content: string }) {
 		<ReactMarkdown
 			remarkPlugins={[remarkMath]}
 			rehypePlugins={[rehypeKatex, rehypeHighlight]}
-			className='prose prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-p:m-1 prose-pre:m-0 text-neutral-300 prose-code:text-neutral-200 prose-pre:scrollbar-thin prose-pre:scrollbar-thumb-gray-700 prose-pre:scrollbar-track-slate-800'
+			className='prose-base'
 		>
 			{props.content}
 		</ReactMarkdown>
@@ -57,23 +57,21 @@ export function ChatItem(props: {
 }) {
 	return (
 		<div
-			className={`group flex-wrap px-4 py-2  my-1 cursor-pointer rounded-2xl bg-base hover:bg-gray-900 ${
+			className={`group flex-wrap px-4 py-2  my-1 cursor-pointer rounded-2xl bg-base hover:bg-gray-100 dark:hover:bg-gray-900 ${
 				props.selected ? ' border-2 border-slate-400' : ''
 			}`}
 			onClick={props.onClick}
 		>
 			<div className='flex'>
-				<div className='flex text-neutral-300 h-6'>{props.title}</div>
+				<div className='textc-base h-6'>{props.title}</div>
 				<CloseIcon
-					className='m-1 h-4 w-4 opacity-0 group-hover:opacity-100 ml-auto text-stone-400 hover:text-stone-300'
+					className='m-1 h-4 w-4 opacity-0 group-hover:opacity-100 ml-auto btn-base hover:text-zinc-400 dark:hover:text-stone-300'
 					onClick={props.onDelete}
 				/>
 			</div>
-			<div className='flex'>
-				<div className='text-sm text-gray-400'>{props.count} 条对话</div>
-				<div className='text-xs text-gray-400 mt-0.5 ml-auto '>
-					{props.time}
-				</div>
+			<div className='flex text-gray-400'>
+				<div className='text-sm'>{props.count} 条对话</div>
+				<div className='text-xs mt-0.5 ml-auto '>{props.time}</div>
 			</div>
 		</div>
 	);
@@ -166,16 +164,14 @@ export function Chat() {
 	return (
 		<div className='h-5/6 flex flex-col flex-1'>
 			{/* header */}
-			<div className='border-b-2 rounded-md border-gray-700 flex items-center justify-between px-4 py-2'>
+			<div className='border-b-2 rounded-md border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 py-2'>
 				<div className='flex-wrap items-center '>
-					<div className='text-lg font-bold text-neutral-300'>
-						{session.topic}
-					</div>
+					<div className='text-lg font-bold textc-base'>{session.topic}</div>
 					<div className='text-sm text-gray-500'>
 						{session.messages.length}条对话
 					</div>
 				</div>
-				<div className='flex text-stone-400'>
+				<div className='flex btn-base'>
 					<IconButton
 						icon={<ExportIcon className='mx-2 h-5 w-5 ' />}
 						onClick={() => {}}
@@ -188,7 +184,7 @@ export function Chat() {
 			</div>
 
 			{/* body */}
-			<div className='scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-slate-950  flex-col flex-1 overflow-y-auto'>
+			<div className='scl flex-col flex-1 overflow-y-auto'>
 				{messages.map((message, index) => {
 					const isUser = message.role === 'user';
 
@@ -203,7 +199,7 @@ export function Chat() {
 								<div className='w-8 h-8 mx-2 mt-2 p-1'>
 									<Avatar role={message.role} />
 									{(message.preview || message.streaming) && (
-										<div className='m-1 font-bold text-sm text-neutral-300 '>
+										<div className='m-1 ml-1.5 font-bold text-sm textc-base '>
 											···
 										</div>
 									)}
@@ -215,7 +211,7 @@ export function Chat() {
 									!isUser ? (
 										<LoadingIcon className='h-5 w-5' />
 									) : (
-										<div className='p-2 mb-2 border-2 border-gray-700 rounded-lg bg-base-100'>
+										<div className='p-2 mb-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-base-100'>
 											<Markdown content={message.content} />
 										</div>
 									)}
@@ -238,10 +234,10 @@ export function Chat() {
 			</div>
 
 			{/* input */}
-			<div className='flex flex-col items-center px-4 py-2 border-t-2 rounded-md border-gray-700'>
+			<div className='flex flex-col items-center px-4 py-2 border-t-2 rounded-md border-gray-200 dark:border-gray-700'>
 				<div className='w-full flex-wrap'>
 					<textarea
-						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none text-neutral-300 bg-base border-2 border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
+						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none textc-base bg-base border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
 						placeholder='请输入消息，Ctrl + Enter 发送'
 						rows={3}
 						onInput={(e) => setUserInput(e.currentTarget.value)}
@@ -249,7 +245,7 @@ export function Chat() {
 						onKeyDown={(e) => onInputKeyDown(e as any)}
 					/>
 					<IconButton
-						className='ml-auto p-0.5 text-sm m-0.5 text-neutral-300 bg-base-100 rounded-lg'
+						className='ml-auto p-0.5 text-sm m-0.5 btn-base bg-base-100 rounded-lg'
 						icon={<SendIcon className='m-1.5 h-5 w-5' />}
 						onClick={onUserSubmit}
 					/>
@@ -268,24 +264,22 @@ export function Home() {
 
 	return (
 		<div className='flex items-center justify-center h-screen'>
-			<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-base border-2 border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
+			<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-base border-2 border-gray-200 dark:border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
 				{/* siderbar*/}
-				<div className='min-w-fit scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-slate-800 overflow-y-auto  p-5 bg-base-100 flex flex-col shadow-inner'>
+				<div className='min-w-fit scl overflow-y-auto  p-5 bg-base-100 flex flex-col shadow-inner'>
 					{/* header */}
 					<div className='flex items-center mb-2'>
-						<GPTIcon className='h-8 w-8' />
-						<div className='text-lg font-bold ml-1 text-neutral-300'>
-							Next GPT
-						</div>
+						<GPTIcon className='btn-base h-8 w-8' />
+						<div className='text-lg font-bold ml-1 textc-base'>Next GPT</div>
 						<IconButton
 							icon={<AddIcon className='h-6 w-6' />}
 							onClick={createNewSession}
-							className=' text-neutral-300 bg-slate-100 dark:bg-slate-900 rounded-lg text-sm ml-auto'
+							className=' textc-base bg-slate-100 dark:bg-slate-900 rounded-lg text-sm ml-auto'
 							text='新对话'
 						/>
 					</div>
 					<ChatList />
-					<div className='flex items-center text-stone-400'>
+					<div className='flex items-center btn-base'>
 						<IconButton
 							icon={<SettingsIcon className='m-2 h-5 w-5' />}
 							onClick={() => setOpenSettings(!openSettings)}
@@ -317,72 +311,72 @@ export function Settings() {
 
 	return (
 		<div className='h-5/6 flex flex-col flex-1'>
-			<div className='border-b-2 rounded-md border-gray-700 flex items-center justify-between px-4 py-2'>
+			<div className='border-b-2 rounded-md border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 py-2'>
 				<div className='flex-wrap items-center '>
-					<div className='text-lg font-bold text-neutral-300'>设置</div>
+					<div className='text-lg font-bold textc-base'>设置</div>
 					<div className='text-sm text-gray-500'>设置选项</div>
 				</div>
-				<div className='flex text-stone-400'>
+				<div className='flex btn-base'>
 					<IconButton
-						icon={<DeleteIcon className='mx-2 h-5 w-5' />}
+						icon={<DeleteIcon className='mx-2 h-6 w-6' />}
 						onClick={() => {}}
 					/>
 					<IconButton
-						icon={<ResetIcon className='mx-2 h-5 w-5' />}
+						icon={<ResetIcon className='mx-2 h-6 w-6' />}
 						onClick={() => {}}
 					/>
 					<IconButton
-						icon={<CloseIcon className='mx-2 h-5 w-5' />}
+						icon={<CloseIcon className='mx-2 h-6 w-6' />}
 						onClick={() => {}}
 					/>
 				</div>
 			</div>
 
-			<div className='m-5 text-neutral-300'>
+			<div className='scl flex-col flex-1 overflow-y-auto pr-10 my-5 mx-10 mr-0 textc-base'>
 				<List>
 					<ListItem>
-						<div className='text-gray-400'>API Key</div>
+						<div className='text-gray-500'>API Key</div>
 						<div className='text-lg'>sk-****Elvt</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>余额查询</div>
+						<div className='text-gray-500'>余额查询</div>
 						<div className='text-lg'>
 							本月已使用${}，订阅总额${}
 						</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>Base URL</div>
+						<div className='text-gray-500'>Base URL</div>
 						<div className='text-lg'>https://api.openai.com</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>AI Model</div>
+						<div className='text-gray-500'>AI Model</div>
 						<div className='text-lg'>gpt-3.5-turbo</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>Max Tokens</div>
+						<div className='text-gray-500'>Max Tokens</div>
 						<div className='text-lg'>2048</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>Temperature</div>
+						<div className='text-gray-500'>Temperature</div>
 						<div className='text-lg'>0.7</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>Top P</div>
+						<div className='text-gray-500'>Top P</div>
 						<div className='text-lg'>1</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>Presence Penalty</div>
+						<div className='text-gray-500'>Presence Penalty</div>
 						<div className='text-lg'>0</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>Frequency Penalty</div>
+						<div className='text-gray-500'>Frequency Penalty</div>
 						<div className='text-lg'>0</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>发送键</div>
+						<div className='text-gray-500'>发送键</div>
 						<div className=''>
 							<select
-								className='pr-5 items-center p-2 rounded-lg border-2 border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
+								className='pr-5 items-center p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
 								value={config.submitKey}
 								onChange={(e) => {
 									updateConfig(
@@ -404,12 +398,12 @@ export function Settings() {
 						</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-400'>最大记忆历史消息数</div>
+						<div className='text-gray-500'>最大记忆历史消息数</div>
 						<div className='text-lg'>{config.historyMessageCount}</div>
 					</ListItem>
 
 					<ListItem>
-						<div className='text-gray-400'>发送机器人回复消息</div>
+						<div className='text-gray-500'>发送机器人回复消息</div>
 						<div className='text-lg'>
 							{config.sendBotMessages ? '是' : '否'}
 						</div>

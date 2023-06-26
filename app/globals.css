@@ -8,3 +8,16 @@
 .bg-base-100{
   @apply bg-slate-200 dark:bg-slate-800;
 }
+.textc-base {
+  @apply text-zinc-950 dark:text-neutral-300;
+}
+.btn-base {
+  @apply text-zinc-700 dark:text-stone-400;
+}
+.scl {
+  @apply scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-slate-50 dark:scrollbar-thumb-gray-900 dark:scrollbar-track-slate-950;
+}
+.prose-base {
+  @apply prose prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-p:m-1 prose-pre:m-0 textc-base prose-code:text-zinc-600 dark:prose-code:text-neutral-200 prose-pre:scrollbar-thin dark:prose-pre:scrollbar-thumb-gray-700 dark:prose-pre:scrollbar-track-slate-800 prose-pre:scrollbar-thumb-gray-200 prose-pre:scrollbar-track-slate-50;
+  ;
+}
