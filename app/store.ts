@@ -25,6 +25,12 @@ interface ChatConfig {
 	submitKey: SubmitKey;
 }
 
+const DEFAULT_CONFIG: ChatConfig = {
+	historyMessageCount: 5,
+	sendBotMessages: false as boolean,
+	submitKey: SubmitKey.CtrlEnter as SubmitKey,
+};
+
 interface ChatStat {
 	tokenCount: number;
 	wordCount: number;
@@ -95,9 +101,11 @@ export const useChatStore = create<ChatStore>()(
 			sessions: [createEmptySession()],
 			currentSessionIndex: 0,
 			config: {
-				historyMessageCount: 5,
-				sendBotMessages: false as boolean,
-				submitKey: SubmitKey.CtrlEnter,
+				...DEFAULT_CONFIG,
+			},
+
+			resetConfig() {
+				set(() => ({ config: { ...DEFAULT_CONFIG } }));
 			},
 
 			getConfig() {
@@ -210,7 +218,7 @@ export const useChatStore = create<ChatStore>()(
 							set(() => ({}));
 						}
 					},
-					
+
 					onError(error) {
 						botMessage.content = '出错了，稍后重试吧';
 						botMessage.streaming = false;
