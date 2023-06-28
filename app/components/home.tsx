@@ -398,7 +398,7 @@ export function Settings() {
 						</div>
 					</ListItem>
 					<ListItem>
-						<div className='text-gray-500'>最大记忆历史消息数</div>
+						<div className='text-gray-500'>最大上下文消息数</div>
 						<div className='text-lg'>{config.historyMessageCount}</div>
 					</ListItem>
 
