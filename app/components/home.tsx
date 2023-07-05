@@ -27,6 +27,7 @@ import { Message, SubmitKey, useChatStore } from '../store';
 import Link from 'next/link';
 import ThemeSwitch from './themeSwitch';
 
+
 export function Markdown(props: { content: string }) {
 	return (
 		<ReactMarkdown
@@ -104,12 +105,34 @@ export function ChatList() {
 	);
 }
 
+function useSubmitHandler() {
+	const config = useChatStore((state) => state.config);
+	const submitKey = config.submitKey;
+
+	const shouldSubmit = (e: KeyboardEvent) => {
+		if (e.key !== 'Enter') return false;
+
+		return (
+			(config.submitKey === SubmitKey.AltEnter && e.altKey) ||
+			(config.submitKey === SubmitKey.CtrlEnter && e.ctrlKey) ||
+			(config.submitKey === SubmitKey.ShiftEnter && e.shiftKey) ||
+			config.submitKey === SubmitKey.Enter
+		);
+	};
+
+	return {
+		submitKey,
+		shouldSubmit,
+	};
+}
+
 export function Chat() {
 	type RenderMessage = Message & { preview?: boolean };
 
 	const session = useChatStore((state) => state.currentSession());
 	const [userInput, setUserInput] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const { submitKey, shouldSubmit } = useSubmitHandler();
 
 	const onUserInput = useChatStore((state) => state.onUserInput);
 	const onUserSubmit = () => {
@@ -120,7 +143,7 @@ export function Chat() {
 	};
 
 	const onInputKeyDown = (e: KeyboardEvent) => {
-		if (e.key === 'Enter' && (e.shiftKey || e.ctrlKey || e.metaKey)) {
+		if (shouldSubmit(e)) {
 			onUserSubmit();
 			e.preventDefault();
 		}
@@ -238,7 +261,7 @@ export function Chat() {
 				<div className='w-full flex-wrap'>
 					<textarea
 						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none textc-base bg-base border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
-						placeholder='请输入消息，Ctrl + Enter 发送'
+						placeholder={`请输入消息, ${submitKey} 发送`}
 						rows={3}
 						onInput={(e) => setUserInput(e.currentTarget.value)}
 						value={userInput}
@@ -261,6 +284,8 @@ export function Home() {
 
 	// settings
 	const [openSettings, setOpenSettings] = useState(false);
+	const config = useChatStore((state) => state.config);
+
 
 	return (
 		<div className='flex items-center justify-center h-screen'>
@@ -278,7 +303,12 @@ export function Home() {
 							text='新对话'
 						/>
 					</div>
-					<ChatList />
+					<div
+						className='flex-1 scrollbar-none overflow-y-auto'
+						onClick={() => setOpenSettings(false)}
+					>
+						<ChatList />
+					</div>
 					<div className='flex items-center btn-base'>
 						<IconButton
 							icon={<SettingsIcon className='m-2 h-5 w-5' />}
@@ -304,9 +334,10 @@ export function Home() {
 }
 
 export function Settings() {
-	const [config, updateConfig] = useChatStore((state) => [
+	const [config, updateConfig, resetConfig] = useChatStore((state) => [
 		state.config,
 		state.updateConfig,
+		state.resetConfig,
 	]);
 
 	return (
@@ -323,12 +354,9 @@ export function Settings() {
 					/>
 					<IconButton
 						icon={<ResetIcon className='mx-2 h-6 w-6' />}
-						onClick={() => {}}
+						onClick={resetConfig}
 					/>
-					<IconButton
-						icon={<CloseIcon className='mx-2 h-6 w-6' />}
-						onClick={() => {}}
-					/>
+					<IconButton icon={<CloseIcon className='mx-2 h-6 w-6' />} />
 				</div>
 			</div>
 
@@ -374,7 +402,7 @@ export function Settings() {
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>发送键</div>
-						<div className=''>
+						<div>
 							<select
 								className='pr-5 items-center p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
 								value={config.submitKey}
@@ -399,14 +427,33 @@ export function Settings() {
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>最大上下文消息数</div>
-						<div className='text-lg'>{config.historyMessageCount}</div>
+						<input
+							type='range'
+							title={config.historyMessageCount.toString()}
+							value={config.historyMessageCount}
+							min='5'
+							max='20'
+							step='5'
+							onChange={(e) =>
+								updateConfig(
+									(config) =>
+										(config.historyMessageCount = e.target.valueAsNumber)
+								)
+							}
+						/>
 					</ListItem>
 
 					<ListItem>
 						<div className='text-gray-500'>发送机器人回复消息</div>
-						<div className='text-lg'>
-							{config.sendBotMessages ? '是' : '否'}
-						</div>
+						<input
+							type='checkbox'
+							checked={config.sendBotMessages}
+							onChange={(e) =>
+								updateConfig(
+									(config) => (config.sendBotMessages = e.currentTarget.checked)
+								)
+							}
+						/>
 					</ListItem>
 				</List>
 			</div>

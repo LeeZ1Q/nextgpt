@@ -92,6 +92,7 @@ interface ChatStore {
 		updater: (message?: Message) => void
 	) => void;
 	getConfig: () => ChatConfig;
+	resetConfig: () => void;
 	updateConfig: (updater: (config: ChatConfig) => void) => void;
 }
 
