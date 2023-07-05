@@ -1,3 +1,4 @@
+import {LoadingIcon} from "../icons/loading";
 export function Card(props: { children: JSX.Element[]; className?: string }) {
 	return <div className=''>{props.children}</div>;
 }
@@ -12,4 +13,14 @@ export function ListItem(props: { children: JSX.Element[] }) {
 
 export function List(props: { children: JSX.Element[] }) {
 	return <div className='items-center'>{props.children}</div>;
+}
+
+export function Loading() {
+  return <div style={{
+    height: "100vh",
+    width: "100vw",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  }}><LoadingIcon /></div>
 }
