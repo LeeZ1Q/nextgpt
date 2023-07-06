@@ -1,5 +1,6 @@
 import { OpenAIApi, Configuration } from 'openai';
 import { ChatRequest } from './typing';
+export const runtime = 'edge';
 
 const apiKey = process.env.OPENAI_API_KEY;
 

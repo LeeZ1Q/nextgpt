@@ -1,7 +1,8 @@
 import { createParser } from 'eventsource-parser';
 import { NextRequest } from 'next/server';
 
-const isPord = process.env.NODE_ENV === 'production';
+export const runtime = 'edge';
+
 const apiKey = process.env.OPENAI_API_KEY;
 
 async function createStream(payload: ReadableStream<Uint8Array>) {
@@ -21,9 +22,8 @@ async function createStream(payload: ReadableStream<Uint8Array>) {
 	const stream = new ReadableStream({
 		async start(controller) {
 			function onParse(event: any) {
-				if (event.type === 'event') {
-					const data = event.data;
-					// https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
+				const { data, type } = event;
+				if (type === 'event') {
 					if (data === '[DONE]') {
 						controller.close();
 						return;
@@ -57,7 +57,3 @@ export async function POST(req: NextRequest) {
 		console.error('[Chat Stream]', error);
 	}
 }
-
-export const config = {
-	runtime: 'edge',
-};

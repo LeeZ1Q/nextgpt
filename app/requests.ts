@@ -1,31 +1,21 @@
 import type { ChatRequest, ChatReponse } from './api/chat/typing';
 import { Message } from './store';
 
-const makeRequestParam = (
-	messages: Message[],
-	options?: {
-		filterBot?: boolean;
-		stream?: boolean;
-	}
-): ChatRequest => {
-	let sendMessages = messages.map((v) => ({
-		role: v.role,
-		content: v.content,
-	}));
-
-	if (options?.filterBot) {
-		sendMessages = sendMessages.filter((m) => m.role !== 'assistant');
-	}
-
+const makeRequestParam = (messages: Message[], stream = false): ChatRequest => {
 	return {
 		model: 'gpt-3.5-turbo',
-		messages: sendMessages,
-		stream: options?.stream,
+		messages: messages
+			.map((v) => ({
+				role: v.role,
+				content: v.content,
+			}))
+			.filter((m) => m.role !== 'assistant'),
+		stream,
 	};
 };
 
 export async function requestChat(messages: Message[]) {
-	const req: ChatRequest = makeRequestParam(messages, { filterBot: true });
+	const req: ChatRequest = makeRequestParam(messages);
 
 	const res = await fetch('/api/chat', {
 		method: 'POST',
@@ -41,72 +31,46 @@ export async function requestChat(messages: Message[]) {
 export async function requestChatStream(
 	messages: Message[],
 	options?: {
-		filterBot?: boolean;
 		onMessage: (message: string, done: boolean) => void;
-		onError: (error: Error) => void;
 	}
 ) {
-	const req = makeRequestParam(messages, {
-		stream: true,
-		filterBot: options?.filterBot,
+	const req = makeRequestParam(messages, true);
+
+	const res = await fetch('/api/chat-stream', {
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		method: 'POST',
+		body: JSON.stringify(req),
 	});
 
-	const controller = new AbortController();
-	const reqTimeoutId = setTimeout(() => controller.abort(), 10000);
+	let responseText = '';
 
-	try {
-		const res = await fetch('/api/chat-stream', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(req),
-			signal: controller.signal,
-		});
-		clearTimeout(reqTimeoutId);
+	if (res.ok) {
+		const reader = res.body?.getReader();
+		const decoder = new TextDecoder();
 
-		let responseText = '';
+		while (true) {
+			const content = await reader?.read();
+			const text = decoder.decode(content?.value);
+			responseText += text;
 
-		const finish = () => {
-			options?.onMessage(responseText, true);
-			controller.abort();
-		};
+			const done = !content || content.done;
+			options?.onMessage(responseText, false);
 
-		if (res.ok) {
-			const reader = res.body?.getReader();
-			const decoder = new TextDecoder();
-
-			while (true) {
-				// handle time out, will stop if no response in 10 secs
-				const timeoutId = setTimeout(() => finish(), 10000);
-				const content = await reader?.read();
-				clearTimeout(timeoutId);
-				const text = decoder.decode(content?.value);
-				responseText += text;
-
-				const done = !content || content.done;
-				options?.onMessage(responseText, false);
-
-				if (done) {
-					break;
-				}
+			if (done) {
+				break;
 			}
-
-			finish();
-		} else {
-			console.error('Stream Error');
-			options?.onError(new Error('Stream Error'));
 		}
-	} catch (err) {
-		console.error('NetWork Error');
-		options?.onError(new Error('NetWork Error'));
+
+		options?.onMessage(responseText, true);
 	}
 }
 
 export async function requestWithPrompt(messages: Message[], prompt: string) {
 	messages = messages.concat([
 		{
-			role: 'user',
+			role: 'system',
 			content: prompt,
 			date: new Date().toLocaleString(),
 		},

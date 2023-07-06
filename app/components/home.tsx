@@ -19,11 +19,15 @@ import { SendIcon } from '../icons/send';
 import { MaxIcon } from '../icons/max';
 import { CloseIcon } from '../icons/close';
 import { LoadingIcon } from '../icons/loading';
+import { CopyIcon } from '../icons/copy';
+import { DownloadIcon } from '../icons/download';
 
 import { Message, SubmitKey, useChatStore } from '../store';
 import Link from 'next/link';
 import ThemeSwitch from './themeSwitch';
-import { Settings } from "./settings";
+import { Settings } from './settings';
+import { showModal } from './uilib';
+import { copyToClipboard, downloadAs } from '../utils';
 
 // import dynamic from 'next/dynamic';
 
@@ -166,7 +170,7 @@ export function Chat() {
 						{
 							role: 'assistant',
 							content: '……',
-							date: new Date().toLocaleString().slice(0, -3),
+							date: new Date().toLocaleString(),
 							preview: true,
 						},
 				  ]
@@ -178,7 +182,7 @@ export function Chat() {
 						{
 							role: 'user',
 							content: userInput,
-							date: new Date().toLocaleString().slice(0, -3),
+							date: new Date().toLocaleString(),
 							preview: true,
 						},
 				  ]
@@ -186,10 +190,18 @@ export function Chat() {
 		);
 
 	useEffect(() => {
-		latestMessageRef.current?.scrollIntoView({
-			behavior: 'smooth',
-			block: 'end',
-		});
+		const dom = latestMessageRef.current;
+		const rect = dom?.getBoundingClientRect();
+		if (
+			dom &&
+			rect &&
+			rect?.top >= document.documentElement.clientHeight - 60
+		) {
+			dom.scrollIntoView({
+				behavior: 'smooth',
+				block: 'end',
+			});
+		}
 	});
 
 	return (
@@ -205,7 +217,9 @@ export function Chat() {
 				<div className='flex btn-base'>
 					<IconButton
 						icon={<ExportIcon className='mx-2 h-5 w-5 ' />}
-						onClick={() => {}}
+						onClick={() => {
+							exportMessages(session.messages, session.topic);
+						}}
 					/>
 					<IconButton
 						icon={<MaxIcon className='mx-2 h-5 w-5' />}
@@ -215,7 +229,7 @@ export function Chat() {
 			</div>
 
 			{/* body */}
-			<div className='scl flex-col flex-1 overflow-y-auto'>
+			<div className='mt-2 scl flex-col flex-1 overflow-y-auto'>
 				{messages.map((message, index) => {
 					const isUser = message.role === 'user';
 
@@ -286,6 +300,40 @@ export function Chat() {
 	);
 }
 
+function exportMessages(messages: Message[], topic: string) {
+	const mdText =
+		`# ${topic}\n\n` +
+		messages
+			.map((m) => {
+				return m.role === 'user' ? `## ${m.content}` : m.content?.trim();
+			})
+			.join('\n\n');
+	const filename = `${topic}.md`;
+
+	showModal({
+		title: '导出聊天记录为 Markdown',
+		children: (
+			<div className='prose-base'>
+				<pre className='whitespace-break-spaces'>{mdText}</pre>
+			</div>
+		),
+		actions: [
+			<IconButton
+				key='copy'
+				icon={<CopyIcon className='h-5 w-5' />}
+				text='全部复制'
+				onClick={() => copyToClipboard(mdText)}
+			/>,
+			<IconButton
+				key='download'
+				icon={<DownloadIcon className='h-5 w-5' />}
+				text='下载文件'
+				onClick={() => downloadAs(mdText, filename)}
+			/>,
+		],
+	});
+}
+
 export function Home() {
 	const [createNewSession] = useChatStore((state) => [state.newSession]);
 	const loading = !useChatStore?.persist?.hasHydrated();
@@ -296,7 +344,7 @@ export function Home() {
 
 	if (loading) {
 		return (
-			<div>
+			<div className='flex items-center justify-center'>
 				<LoadingIcon />
 			</div>
 		);
@@ -341,7 +389,11 @@ export function Home() {
 				</div>
 				{/* main */}
 				<div className='min-w-[240px] flex flex-col flex-1'>
-					{openSettings ?   <Settings closeSettings={() => setOpenSettings(false)} /> : <Chat key='chat' />}
+					{openSettings ? (
+						<Settings closeSettings={() => setOpenSettings(false)} />
+					) : (
+						<Chat key='chat' />
+					)}
 				</div>
 			</div>
 		</div>
