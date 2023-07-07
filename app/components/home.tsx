@@ -1,13 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import 'katex/dist/katex.min.css';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeHighlight from 'rehype-highlight';
 
 import { IconButton } from './button';
+import { Markdown } from './markdown';
 
 import { SettingsIcon } from '../icons/settings';
 import { AddIcon } from '../icons/add';
@@ -29,28 +25,6 @@ import { Settings } from './settings';
 import { showModal } from './uilib';
 import { copyToClipboard, downloadAs } from '../utils';
 
-// import dynamic from 'next/dynamic';
-
-// export const LazySettings = dynamic(
-// 	async () => await (await import('./settings')).Settings,
-// 	{
-// 		loading: () => (
-// 				<LoadingIcon />
-// 		),
-// 	}
-// );
-
-export function Markdown(props: { content: string }) {
-	return (
-		<ReactMarkdown
-			remarkPlugins={[remarkMath]}
-			rehypePlugins={[rehypeKatex, rehypeHighlight]}
-			className='prose-base'
-		>
-			{props.content}
-		</ReactMarkdown>
-	);
-}
 
 export function Avatar(props: { role: Message['role'] }) {
 	if (props.role === 'assistant') {

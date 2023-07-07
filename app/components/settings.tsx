@@ -9,11 +9,14 @@ import { IconButton } from './button';
 import { SubmitKey, useChatStore } from '../store';
 
 export function Settings(props: { closeSettings: () => void }) {
-	const [config, updateConfig, resetConfig] = useChatStore((state) => [
-		state.config,
-		state.updateConfig,
-		state.resetConfig,
-	]);
+	const [config, updateConfig, resetConfig, clearAllData] = useChatStore(
+		(state) => [
+			state.config,
+			state.updateConfig,
+			state.resetConfig,
+			state.clearAllData,
+		]
+	);
 
 	return (
 		<div className='h-5/6 flex flex-col flex-1'>
@@ -25,7 +28,7 @@ export function Settings(props: { closeSettings: () => void }) {
 				<div className='flex btn-base'>
 					<IconButton
 						icon={<DeleteIcon className='mx-2 h-6 w-6' />}
-						onClick={() => {}}
+						onClick={clearAllData}
 					/>
 					<IconButton
 						icon={<ResetIcon className='mx-2 h-6 w-6' />}
@@ -116,6 +119,23 @@ export function Settings(props: { closeSettings: () => void }) {
 								updateConfig(
 									(config) =>
 										(config.historyMessageCount = e.target.valueAsNumber)
+								)
+							}
+						/>
+					</ListItem>
+
+					<ListItem>
+						<div className='text-gray-500'>历史消息压缩长度阈值</div>
+						<input
+							type='number'
+							min={500}
+							max={4000}
+							value={config.compressMessageLengthThreshold}
+							onChange={(e) =>
+								updateConfig(
+									(config) =>
+										(config.compressMessageLengthThreshold =
+											e.currentTarget.valueAsNumber)
 								)
 							}
 						/>
