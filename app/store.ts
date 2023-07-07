@@ -8,8 +8,6 @@ import { trimTopic } from './utils';
 export type Message = ChatCompletionResponseMessage & {
 	date: string;
 	streaming?: boolean;
-	// isError?: boolean;
-	// id?: number;
 };
 
 export enum SubmitKey {
@@ -18,6 +16,7 @@ export enum SubmitKey {
 	ShiftEnter = 'Shift + Enter',
 	AltEnter = 'Alt + Enter',
 }
+
 interface ChatConfig {
 	maxToken?: number;
 	historyMessageCount: number; // -1 means all
@@ -47,10 +46,10 @@ interface ChatSession {
 	deleted?: boolean;
 }
 
-const DEFAULT_TOPIC = '新对话';
+const DEFAULT_TOPIC = '新的聊天';
 
 function createEmptySession(): ChatSession {
-	const createDate = new Date().toLocaleString().slice(0, -3);
+	const createDate = new Date().toLocaleString();
 
 	return {
 		id: Date.now(),
@@ -91,10 +90,13 @@ interface ChatStore {
 		messageIndex: number,
 		updater: (message?: Message) => void
 	) => void;
+
 	getConfig: () => ChatConfig;
 	resetConfig: () => void;
 	updateConfig: (updater: (config: ChatConfig) => void) => void;
 }
+
+const LOCAL_KEY = 'chat-next-web-store';
 
 export const useChatStore = create<ChatStore>()(
 	persist(
@@ -118,6 +120,7 @@ export const useChatStore = create<ChatStore>()(
 				updater(config);
 				set(() => ({ config }));
 			},
+
 			selectSession(index: number) {
 				set({
 					currentSessionIndex: index,
@@ -164,6 +167,7 @@ export const useChatStore = create<ChatStore>()(
 					index = Math.min(sessions.length - 1, Math.max(0, index));
 					set(() => ({ currentSessionIndex: index }));
 				}
+
 				const session = sessions[index];
 
 				return session;
@@ -181,19 +185,12 @@ export const useChatStore = create<ChatStore>()(
 				const message: Message = {
 					role: 'user',
 					content,
-					date: new Date().toLocaleString().slice(0, -3),
+					date: new Date().toLocaleString(),
 				};
 
+				// get last five messges
 				const messages = get().currentSession().messages.concat(message);
 				get().onNewMessage(message);
-
-				// 	const res = await requestChat(messages);
-
-				// 	get().onNewMessage({
-				// 		...res.choices[0].message!,
-				// 		date: new Date().toLocaleString(),
-				// 	});
-				// },
 
 				const botMessage: Message = {
 					content: '',
@@ -219,9 +216,8 @@ export const useChatStore = create<ChatStore>()(
 							set(() => ({}));
 						}
 					},
-
 					onError(error) {
-						botMessage.content += '\n\n出错了, 稍后重试吧';
+						botMessage.content += '\n\n出错了，稍后重试吧';
 						botMessage.streaming = false;
 						set(() => ({}));
 					},
@@ -237,7 +233,6 @@ export const useChatStore = create<ChatStore>()(
 				const sessions = get().sessions;
 				const session = sessions.at(sessionIndex);
 				const messages = session?.messages;
-				console.log(sessions, messages?.length, messages?.at(messageIndex));
 				updater(messages?.at(messageIndex));
 				set(() => ({ sessions }));
 			},
@@ -249,16 +244,17 @@ export const useChatStore = create<ChatStore>()(
 			summarizeSession() {
 				const session = get().currentSession();
 
-				if (session.topic !== DEFAULT_TOPIC) return;
-
-				requestWithPrompt(
-					session.messages,
-					'Summarize the tittle in 3 words in Chinese'
-				).then((res) => {
-					get().updateCurrentSession(
-						(session) => (session.topic = trimTopic(res))
-					);
-				});
+				if (session.topic === DEFAULT_TOPIC) {
+					// should summarize topic
+					requestWithPrompt(
+						session.messages,
+						'直接返回这句话的简要主题，不要解释，如果没有主题，请直接返回“闲聊”'
+					).then((res) => {
+						get().updateCurrentSession(
+							(session) => (session.topic = trimTopic(res))
+						);
+					});
+				}
 			},
 
 			updateStat(message) {
@@ -275,6 +271,8 @@ export const useChatStore = create<ChatStore>()(
 				set(() => ({ sessions }));
 			},
 		}),
-		{ name: 'next-gpt-store' }
+		{
+			name: LOCAL_KEY,
+		}
 	)
 );

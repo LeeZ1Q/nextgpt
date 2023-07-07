@@ -195,14 +195,14 @@ export function Chat() {
 		if (
 			dom &&
 			rect &&
-			rect?.top >= document.documentElement.clientHeight - 60
+			rect?.top >= document.documentElement.clientHeight - 200
 		) {
 			dom.scrollIntoView({
 				behavior: 'smooth',
 				block: 'end',
 			});
 		}
-	});
+	}, [latestMessageRef, messages]);
 
 	return (
 		<div className='h-5/6 flex flex-col flex-1'>
