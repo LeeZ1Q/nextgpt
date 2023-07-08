@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { IconButton } from './button';
-import { Markdown } from './markdown';
 
 import { SettingsIcon } from '../icons/settings';
 import { AddIcon } from '../icons/add';
@@ -21,10 +20,19 @@ import { DownloadIcon } from '../icons/download';
 import { Message, SubmitKey, useChatStore } from '../store';
 import Link from 'next/link';
 import ThemeSwitch from './themeSwitch';
-import { Settings } from './settings';
+
 import { showModal } from './uilib';
 import { copyToClipboard, downloadAs } from '../utils';
 
+import dynamic from 'next/dynamic';
+
+const Markdown = dynamic(async () => (await import('./markdown')).Markdown, {
+	loading: () => <LoadingIcon />,
+});
+
+const Settings = dynamic(async () => (await import('./settings')).Settings, {
+	loading: () => <LoadingIcon />,
+});
 
 export function Avatar(props: { role: Message['role'] }) {
 	if (props.role === 'assistant') {
