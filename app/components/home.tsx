@@ -22,7 +22,7 @@ import Link from 'next/link';
 import ThemeSwitch from './themeSwitch';
 
 import { showModal } from './uilib';
-import { copyToClipboard, downloadAs } from '../utils';
+import { copyToClipboard, downloadAs, selectOrCopy } from '../utils';
 
 import dynamic from 'next/dynamic';
 
@@ -238,7 +238,14 @@ export function Chat() {
 									!isUser ? (
 										<LoadingIcon className='h-5 w-5' />
 									) : (
-										<div className='p-2 mb-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-base-100'>
+										<div
+											className='p-2 mb-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-base-100'
+											onContextMenu={(e) => {
+												if (selectOrCopy(e.currentTarget, message.content)) {
+													e.preventDefault();
+												}
+											}}
+										>
 											<Markdown content={message.content} />
 										</div>
 									)}

@@ -28,3 +28,15 @@ export function downloadAs(text: string, filename: string) {
 
 	document.body.removeChild(element);
 }
+
+export function selectOrCopy(el: HTMLElement, content: string) {
+	const currentSelection = window.getSelection();
+
+	if (currentSelection?.type === 'Range') {
+		return false;
+	}
+
+	copyToClipboard(content);
+
+	return true;
+}
