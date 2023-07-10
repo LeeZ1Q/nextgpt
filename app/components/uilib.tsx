@@ -74,18 +74,25 @@ export function Modal(props: ModalProps) {
 
 export function showModal(props: ModalProps) {
 	const div = document.createElement('div');
-	div.className = '';
+	div.className = 'fixed top-0 left-0 bottom-0 right-0 z-50 flex items-center justify-center';
 	document.body.appendChild(div);
 
 	const root = createRoot(div);
+	const closeModal = () => {
+		props.onClose?.();
+		root.unmount();
+		div.remove();
+	};
+	div.onclick = (e) => {
+		if (e.target === div) {
+			closeModal();
+		}
+	};
+
 	root.render(
 		<Modal
 			{...props}
-			onClose={() => {
-				props.onClose?.();
-				root.unmount();
-				div.remove();
-			}}
-		></Modal>
+			onClose={closeModal}
+		/>
 	);
 }

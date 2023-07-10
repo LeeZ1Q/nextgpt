@@ -140,19 +140,6 @@ export function Settings(props: { closeSettings: () => void }) {
 							}
 						/>
 					</ListItem>
-
-					<ListItem>
-						<div className='text-gray-500'>发送机器人回复消息</div>
-						<input
-							type='checkbox'
-							checked={config.sendBotMessages}
-							onChange={(e) =>
-								updateConfig(
-									(config) => (config.sendBotMessages = e.currentTarget.checked)
-								)
-							}
-						/>
-					</ListItem>
 				</List>
 			</div>
 		</div>

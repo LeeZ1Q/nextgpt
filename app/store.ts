@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { type ChatCompletionResponseMessage } from 'openai';
-import { requestChat, requestChatStream, requestWithPrompt } from './requests';
+import { requestChatStream, requestWithPrompt } from './requests';
 import { trimTopic } from './utils';
 
 export type Message = ChatCompletionResponseMessage & {
@@ -48,7 +48,7 @@ interface ChatSession {
 	lastSummarizeIndex: number;
 }
 
-const DEFAULT_TOPIC = '新的聊天';
+const DEFAULT_TOPIC = '新对话';
 
 function createEmptySession(): ChatSession {
 	const createDate = new Date().toLocaleString();
