@@ -324,18 +324,11 @@ function exportMessages(messages: Message[], topic: string) {
 }
 
 export function Home() {
-	const [createNewSession, currentIndex, removeSession] = useChatStore(
-		(state) => [
-			state.newSession,
-			state.currentSessionIndex,
-			state.removeSession,
-		]
-	);
+	const [createNewSession] = useChatStore((state) => [state.newSession]);
 	const loading = !useChatStore?.persist?.hasHydrated();
 
 	// settings
 	const [openSettings, setOpenSettings] = useState(false);
-	const config = useChatStore((state) => state.config);
 
 	if (loading) {
 		return (

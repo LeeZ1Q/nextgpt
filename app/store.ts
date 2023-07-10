@@ -17,12 +17,84 @@ export enum SubmitKey {
 	AltEnter = 'Alt + Enter',
 }
 
-interface ChatConfig {
+export interface ChatConfig {
 	maxToken?: number;
 	historyMessageCount: number; // -1 means all
 	compressMessageLengthThreshold: number;
 	sendBotMessages: boolean; // send bot's message or not
 	submitKey: SubmitKey;
+
+	modelConfig: {
+		model: string;
+		temperature: number;
+		max_tokens: number;
+		presence_penalty: number;
+	};
+}
+
+export type ModelConfig = ChatConfig['modelConfig'];
+
+export const ALL_MODELS = [
+	{
+		name: 'gpt-4',
+		available: false,
+	},
+	{
+		name: 'gpt-4-0314',
+		available: false,
+	},
+	{
+		name: 'gpt-4-32k',
+		available: false,
+	},
+	{
+		name: 'gpt-4-32k-0314',
+		available: false,
+	},
+	{
+		name: 'gpt-3.5-turbo',
+		available: true,
+	},
+	{
+		name: 'gpt-3.5-turbo-0301',
+		available: true,
+	},
+];
+
+export function isValidModel(name: string) {
+	return ALL_MODELS.some((m) => m.name === name && m.available);
+}
+
+export function isValidNumber(x: number, min: number, max: number) {
+	return typeof x === 'number' && x <= max && x >= min;
+}
+
+export function filterConfig(config: ModelConfig): Partial<ModelConfig> {
+	const validator: {
+		[k in keyof ModelConfig]: (x: ModelConfig[keyof ModelConfig]) => boolean;
+	} = {
+		model(x) {
+			return isValidModel(x as string);
+		},
+		max_tokens(x) {
+			return isValidNumber(x as number, 100, 4000);
+		},
+		presence_penalty(x) {
+			return isValidNumber(x as number, -2, 2);
+		},
+		temperature(x) {
+			return isValidNumber(x as number, 0, 1);
+		},
+	};
+
+	Object.keys(validator).forEach((k) => {
+		const key = k as keyof ModelConfig;
+		if (!validator[key](config[key])) {
+			delete config[key];
+		}
+	});
+
+	return config;
 }
 
 const DEFAULT_CONFIG: ChatConfig = {
@@ -30,6 +102,12 @@ const DEFAULT_CONFIG: ChatConfig = {
 	compressMessageLengthThreshold: 1000,
 	sendBotMessages: true as boolean,
 	submitKey: SubmitKey.CtrlEnter as SubmitKey,
+	modelConfig: {
+		model: 'gpt-3.5-turbo',
+		temperature: 1,
+		max_tokens: 2000,
+		presence_penalty: 0,
+	},
 };
 
 interface ChatStat {
@@ -93,6 +171,7 @@ interface ChatStore {
 		updater: (message?: Message) => void
 	) => void;
 	getMessagesWithMemory: () => Message[];
+	getMemoryPrompt: () => Message;
 
 	getConfig: () => ChatConfig;
 	resetConfig: () => void;
@@ -100,7 +179,7 @@ interface ChatStore {
 	clearAllData: () => void;
 }
 
-const LOCAL_KEY = 'chat-next-web-store';
+const LOCAL_KEY = 'next-gpt-store';
 
 export const useChatStore = create<ChatStore>()(
 	persist(
@@ -178,23 +257,19 @@ export const useChatStore = create<ChatStore>()(
 			},
 
 			onNewMessage(message) {
+				get().updateCurrentSession((session) => {
+					session.lastUpdate = new Date().toLocaleString();
+				});
 				get().updateStat(message);
 				get().summarizeSession();
 			},
 
 			async onUserInput(content) {
-				const message: Message = {
+				const userMessage: Message = {
 					role: 'user',
 					content,
 					date: new Date().toLocaleString(),
 				};
-
-				get().updateCurrentSession((session) => {
-					session.messages.push(message);
-				});
-
-				// get last five messges
-				const messages = get().currentSession().messages.concat(message);
 
 				const botMessage: Message = {
 					content: '',
@@ -203,13 +278,18 @@ export const useChatStore = create<ChatStore>()(
 					streaming: true,
 				};
 
+				// get last five messges
+				const recentMessages = get().getMessagesWithMemory();
+				const sendMessages = recentMessages.concat(userMessage);
+
 				get().updateCurrentSession((session) => {
+					session.messages.push(userMessage);
 					session.messages.push(botMessage);
 				});
 
-				const recentMessages = get().getMessagesWithMemory();
+				console.log('[User Input] ', sendMessages);
 
-				requestChatStream(recentMessages, {
+				requestChatStream(sendMessages, {
 					onMessage(content, done) {
 						if (done) {
 							botMessage.streaming = false;
@@ -225,21 +305,29 @@ export const useChatStore = create<ChatStore>()(
 						set(() => ({}));
 					},
 					filterBot: !get().config.sendBotMessages,
+					modelConfig: get().config.modelConfig,
 				});
+			},
+
+			getMemoryPrompt() {
+				const session = get().currentSession();
+
+				return {
+					role: 'system',
+					content: '这是你和用户的历史聊天总结：' + session.memoryPrompt,
+					date: '',
+				} as Message;
 			},
 
 			getMessagesWithMemory() {
 				const session = get().currentSession();
 				const config = get().config;
+				const n = session.messages.length;
 				const recentMessages = session.messages.slice(
-					-config.historyMessageCount
+					n - config.historyMessageCount
 				);
 
-				const memoryPrompt: Message = {
-					role: 'system',
-					content: '这是你和用户的历史聊天总结：' + session.memoryPrompt,
-					date: '',
-				};
+				const memoryPrompt = get().getMemoryPrompt();
 
 				if (session.memoryPrompt) {
 					recentMessages.unshift(memoryPrompt);
@@ -275,19 +363,37 @@ export const useChatStore = create<ChatStore>()(
 					});
 				}
 
+				const config = get().config;
+				let toBeSummarizedMsgs = session.messages.slice(
+					session.lastSummarizeIndex
+				);
+				const historyMsgLength = toBeSummarizedMsgs.reduce(
+					(pre, cur) => pre + cur.content.length,
+					0
+				);
+
+				if (historyMsgLength > 4000) {
+					toBeSummarizedMsgs = toBeSummarizedMsgs.slice(
+						-config.historyMessageCount
+					);
+				}
+
 				const messages = get().getMessagesWithMemory();
-				const toBeSummarizedMsgs = messages.slice(session.lastSummarizeIndex);
-				const historyMsgLength =
-					session.memoryPrompt.length +
-					toBeSummarizedMsgs.reduce((pre, cur) => pre + cur.content.length, 0);
 				const lastSummarizeIndex = messages.length;
-				if (historyMsgLength > 500) {
+
+				console.log(
+					'[Chat History] ',
+					toBeSummarizedMsgs,
+					historyMsgLength,
+					config.compressMessageLengthThreshold
+				);
+
+				if (historyMsgLength > config.compressMessageLengthThreshold) {
 					requestChatStream(
 						toBeSummarizedMsgs.concat({
 							role: 'system',
 							content:
 								'简要总结一下你和用户的对话，用作后续的上下文提示 prompt，控制在 50 字以内',
-
 							date: '',
 						}),
 						{
@@ -297,6 +403,7 @@ export const useChatStore = create<ChatStore>()(
 								session.lastSummarizeIndex = lastSummarizeIndex;
 								if (done) {
 									console.log('[Memory] ', session.memoryPrompt);
+									session.lastSummarizeIndex = lastSummarizeIndex;
 								}
 							},
 							onError(error) {

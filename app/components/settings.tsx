@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 
 import { List, ListItem } from './uilib';
 import { CloseIcon } from '../icons/close';
@@ -6,7 +6,7 @@ import { DeleteIcon } from '../icons/delete';
 import { ResetIcon } from '../icons/reset';
 
 import { IconButton } from './button';
-import { SubmitKey, useChatStore } from '../store';
+import { SubmitKey, useChatStore, ALL_MODELS } from '../store';
 
 export function Settings(props: { closeSettings: () => void }) {
 	const [config, updateConfig, resetConfig, clearAllData] = useChatStore(
@@ -59,7 +59,24 @@ export function Settings(props: { closeSettings: () => void }) {
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>AI Model</div>
-						<div className='text-lg'>gpt-3.5-turbo</div>
+						<select
+							value={config.modelConfig.model}
+							onChange={(e) => {
+								updateConfig(
+									(config) => (config.modelConfig.model = e.currentTarget.value)
+								);
+							}}
+						>
+							{ALL_MODELS.map((v) => (
+								<option
+									value={v.name}
+									key={v.name}
+									disabled={!v.available}
+								>
+									{v.name}
+								</option>
+							))}
+						</select>
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>Max Tokens</div>
