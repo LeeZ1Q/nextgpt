@@ -60,6 +60,7 @@ export function Settings(props: { closeSettings: () => void }) {
 					<ListItem>
 						<div className='text-gray-500'>AI Model</div>
 						<select
+							className='items-center p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
 							value={config.modelConfig.model}
 							onChange={(e) => {
 								updateConfig(
@@ -80,11 +81,38 @@ export function Settings(props: { closeSettings: () => void }) {
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>Max Tokens</div>
-						<div className='text-lg'>2048</div>
+						<input
+							className='items-center p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
+							type='number'
+							min={100}
+							max={4000}
+							value={config.modelConfig.max_tokens}
+							onChange={(e) =>
+								updateConfig(
+									(config) =>
+										(config.modelConfig.max_tokens =
+											e.currentTarget.valueAsNumber)
+								)
+							}
+						/>
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>Temperature</div>
-						<div className='text-lg'>0.7</div>
+						<input
+							type='range'
+							title={config.modelConfig.temperature.toString()}
+							value={config.modelConfig.temperature.toFixed(1)}
+							min='0'
+							max='1'
+							step='0.1'
+							onChange={(e) => {
+								updateConfig(
+									(config) =>
+										(config.modelConfig.temperature =
+											e.currentTarget.valueAsNumber)
+								);
+							}}
+						/>
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>Top P</div>
@@ -92,7 +120,21 @@ export function Settings(props: { closeSettings: () => void }) {
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>Presence Penalty</div>
-						<div className='text-lg'>0</div>
+						<input
+							type='range'
+							title={config.modelConfig.presence_penalty.toString()}
+							value={config.modelConfig.presence_penalty.toFixed(1)}
+							min='-2'
+							max='2'
+							step='0.5'
+							onChange={(e) => {
+								updateConfig(
+									(config) =>
+										(config.modelConfig.presence_penalty =
+											e.currentTarget.valueAsNumber)
+								);
+							}}
+						/>
 					</ListItem>
 					<ListItem>
 						<div className='text-gray-500'>Frequency Penalty</div>
@@ -102,7 +144,7 @@ export function Settings(props: { closeSettings: () => void }) {
 						<div className='text-gray-500'>发送键</div>
 						<div>
 							<select
-								className='pr-5 items-center p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
+								className='items-center p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
 								value={config.submitKey}
 								onChange={(e) => {
 									updateConfig(
@@ -129,9 +171,9 @@ export function Settings(props: { closeSettings: () => void }) {
 							type='range'
 							title={config.historyMessageCount.toString()}
 							value={config.historyMessageCount}
-							min='5'
+							min='2'
 							max='20'
-							step='5'
+							step='2'
 							onChange={(e) =>
 								updateConfig(
 									(config) =>
@@ -144,6 +186,7 @@ export function Settings(props: { closeSettings: () => void }) {
 					<ListItem>
 						<div className='text-gray-500'>历史消息压缩长度阈值</div>
 						<input
+							className='items-center p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring focus:ring-slate-400 bg-base'
 							type='number'
 							min={500}
 							max={4000}

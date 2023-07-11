@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 
 import { IconButton } from './button';
 
@@ -110,7 +110,10 @@ function useSubmitHandler() {
 			(config.submitKey === SubmitKey.AltEnter && e.altKey) ||
 			(config.submitKey === SubmitKey.CtrlEnter && e.ctrlKey) ||
 			(config.submitKey === SubmitKey.ShiftEnter && e.shiftKey) ||
-			config.submitKey === SubmitKey.Enter
+			(config.submitKey === SubmitKey.Enter &&
+				!e.altKey &&
+				!e.ctrlKey &&
+				!e.shiftKey)
 		);
 	};
 
@@ -171,23 +174,25 @@ export function Chat() {
 				: []
 		);
 
-	useEffect(() => {
-		const dom = latestMessageRef.current;
-		const rect = dom?.getBoundingClientRect();
-		if (
-			dom &&
-			rect &&
-			rect?.top >= document.documentElement.clientHeight - 200
-		) {
-			dom.scrollIntoView({
-				behavior: 'smooth',
-				block: 'end',
-			});
-		}
+	useLayoutEffect(() => {
+		setTimeout(() => {
+			const dom = latestMessageRef.current;
+			const rect = dom?.getBoundingClientRect();
+			if (
+				dom &&
+				rect &&
+				rect?.top >= document.documentElement.clientHeight - 200
+			) {
+				dom.scrollIntoView({
+					behavior: 'smooth',
+					block: 'end',
+				});
+			}
+		}, 500);
 	}, [latestMessageRef, messages]);
 
 	return (
-		<div className='h-5/6 flex flex-col flex-1'>
+		<div className='h-5/6 flex flex-col flex-1' key={session.id}>
 			{/* header */}
 			<div className='border-b-2 rounded-md border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 py-2'>
 				<div className='flex-wrap items-center '>
