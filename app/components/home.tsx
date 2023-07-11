@@ -192,7 +192,10 @@ export function Chat() {
 	}, [latestMessageRef, messages]);
 
 	return (
-		<div className='h-5/6 flex flex-col flex-1' key={session.id}>
+		<div
+			className='h-5/6 flex flex-col flex-1'
+			key={session.id}
+		>
 			{/* header */}
 			<div className='border-b-2 rounded-md border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 py-2'>
 				<div className='flex-wrap items-center '>
@@ -255,7 +258,7 @@ export function Chat() {
 										</div>
 									)}
 									{!isUser && !message.preview && (
-										<div className=' ml-auto text-xs text-gray-500 '>
+										<div className='ml-2 text-xs text-gray-500 '>
 											{message.date}
 										</div>
 									)}
@@ -266,7 +269,7 @@ export function Chat() {
 				})}
 				<span
 					ref={latestMessageRef}
-					style={{ opacity: 0 }}
+					className='opacity-0 h-8'
 				>
 					-
 				</span>
@@ -330,20 +333,33 @@ function exportMessages(messages: Message[], topic: string) {
 
 export function Home() {
 	const [createNewSession] = useChatStore((state) => [state.newSession]);
-	const loading = !useChatStore?.persist?.hasHydrated();
+	// const loading = !useChatStore?.persist?.hasHydrated();
+	const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+      setMounted(true)
+  }, [])
 
+	
 	// settings
 	const [openSettings, setOpenSettings] = useState(false);
 
-	if (loading) {
-		return (
-			<div className='flex items-center justify-center'>
-				<LoadingIcon />
-			</div>
-		);
+	// if (loading) {
+	// 	return (
+	// 		<div className='flex items-center justify-center'>
+	// 			<LoadingIcon />
+	// 		</div>
+	// 	);
+	// }
+
+	if (!mounted) {
+		return  (
+					<div className='flex items-center justify-center'>
+						<LoadingIcon />
+					</div>
+				);
 	}
 
-	return (
+	return mounted &&(
 		<div className='flex items-center justify-center h-screen'>
 			<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-base border-2 border-gray-200 dark:border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
 				{/* siderbar*/}
