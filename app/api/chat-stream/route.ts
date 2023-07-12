@@ -18,7 +18,8 @@ async function createStream(payload: ReadableStream<Uint8Array>) {
 		},
 		method: 'POST',
 		body: payload,
-		duplex: 'half',
+		//RequestInit类型目前不支持duplex
+		...({ duplex: 'half' } as { duplex: string }),
 	});
 
 	const stream = new ReadableStream({
