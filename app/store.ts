@@ -368,7 +368,7 @@ export const useChatStore = create<ChatStore>()(
 					session.lastSummarizeIndex
 				);
 				const historyMsgLength = toBeSummarizedMsgs.reduce(
-					(pre, cur) => pre + cur.content.length,
+					(pre, cur) => pre + (cur.content?.length ?? 0),
 					0
 				);
 
@@ -416,7 +416,7 @@ export const useChatStore = create<ChatStore>()(
 
 			updateStat(message) {
 				get().updateCurrentSession((session) => {
-					session.stat.charCount += message.content.length;
+					session.stat.charCount += message.content?.length ?? 0;
 					// TODO: should update chat count and word count
 				});
 			},

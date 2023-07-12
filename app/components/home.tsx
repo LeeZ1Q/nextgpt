@@ -249,12 +249,14 @@ export function Chat() {
 										<div
 											className='p-2 mb-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-base-100'
 											onContextMenu={(e) => {
-												if (selectOrCopy(e.currentTarget, message.content)) {
+												if (
+													selectOrCopy(e.currentTarget, String(message.content))
+												) {
 													e.preventDefault();
 												}
 											}}
 										>
-											<Markdown content={message.content} />
+											<Markdown content={String(message.content)} />
 										</div>
 									)}
 									{!isUser && !message.preview && (
@@ -335,11 +337,10 @@ export function Home() {
 	const [createNewSession] = useChatStore((state) => [state.newSession]);
 	// const loading = !useChatStore?.persist?.hasHydrated();
 	const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-      setMounted(true)
-  }, [])
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
-	
 	// settings
 	const [openSettings, setOpenSettings] = useState(false);
 
@@ -352,59 +353,61 @@ export function Home() {
 	// }
 
 	if (!mounted) {
-		return  (
-					<div className='flex items-center justify-center'>
-						<LoadingIcon />
-					</div>
-				);
+		return (
+			<div className='flex items-center justify-center'>
+				<LoadingIcon />
+			</div>
+		);
 	}
 
-	return mounted &&(
-		<div className='flex items-center justify-center h-screen'>
-			<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-base border-2 border-gray-200 dark:border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
-				{/* siderbar*/}
-				<div className='min-w-fit scl overflow-y-auto  p-5 bg-base-100 flex flex-col shadow-inner'>
-					{/* header */}
-					<div className='flex items-center mb-2'>
-						<GPTIcon className='btn-base h-8 w-8' />
-						<div className='text-lg font-bold ml-1 textc-base'>Next GPT</div>
-						<IconButton
-							icon={<AddIcon className='h-6 w-6' />}
-							onClick={createNewSession}
-							className=' textc-base bg-slate-100 dark:bg-slate-900 rounded-lg text-sm ml-auto'
-							text='新对话'
-						/>
-					</div>
-					<div
-						className='flex-1 scrollbar-none overflow-y-auto'
-						onClick={() => setOpenSettings(false)}
-					>
-						<ChatList />
-					</div>
-					<div className='flex items-center btn-base'>
-						<IconButton
-							icon={<SettingsIcon className='m-2 h-5 w-5' />}
-							onClick={() => setOpenSettings(!openSettings)}
-						/>
-
-						<Link
-							href='https://github.com/LeeZ1Q'
-							target='_blank'
+	return (
+		mounted && (
+			<div className='flex items-center justify-center h-screen'>
+				<div className='w-11/12 h-5/6 max-w-screen-xl min-w-[600px] min-h-[480px] flex mx-auto bg-base border-2 border-gray-200 dark:border-gray-700 rounded-3xl shadow-sm overflow-hidden'>
+					{/* siderbar*/}
+					<div className='min-w-fit scl overflow-y-auto  p-5 bg-base-100 flex flex-col shadow-inner'>
+						{/* header */}
+						<div className='flex items-center mb-2'>
+							<GPTIcon className='btn-base h-8 w-8' />
+							<div className='text-lg font-bold ml-1 textc-base'>Next GPT</div>
+							<IconButton
+								icon={<AddIcon className='h-6 w-6' />}
+								onClick={createNewSession}
+								className=' textc-base bg-slate-100 dark:bg-slate-900 rounded-lg text-sm ml-auto'
+								text='新对话'
+							/>
+						</div>
+						<div
+							className='flex-1 scrollbar-none overflow-y-auto'
+							onClick={() => setOpenSettings(false)}
 						>
-							<IconButton icon={<GithubIcon className='h-6 w-6' />} />
-						</Link>
-						<ThemeSwitch />
+							<ChatList />
+						</div>
+						<div className='flex items-center btn-base'>
+							<IconButton
+								icon={<SettingsIcon className='m-2 h-5 w-5' />}
+								onClick={() => setOpenSettings(!openSettings)}
+							/>
+
+							<Link
+								href='https://github.com/LeeZ1Q'
+								target='_blank'
+							>
+								<IconButton icon={<GithubIcon className='h-6 w-6' />} />
+							</Link>
+							<ThemeSwitch />
+						</div>
 					</div>
-				</div>
-				{/* main */}
-				<div className='min-w-[240px] flex flex-col flex-1'>
-					{openSettings ? (
-						<Settings closeSettings={() => setOpenSettings(false)} />
-					) : (
-						<Chat key='chat' />
-					)}
+					{/* main */}
+					<div className='min-w-[240px] flex flex-col flex-1'>
+						{openSettings ? (
+							<Settings closeSettings={() => setOpenSettings(false)} />
+						) : (
+							<Chat key='chat' />
+						)}
+					</div>
 				</div>
 			</div>
-		</div>
+		)
 	);
 }
