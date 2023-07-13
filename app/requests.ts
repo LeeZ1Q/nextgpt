@@ -47,6 +47,7 @@ export async function requestChatStream(
 		modelConfig?: ModelConfig;
 		onMessage: (message: string, done: boolean) => void;
 		onError: (error: Error) => void;
+		onController?: (controller: AbortController) => void;
 	}
 ) {
 	const req = makeRequestParam(messages, {
@@ -84,6 +85,8 @@ export async function requestChatStream(
 		if (res.ok) {
 			const reader = res.body?.getReader();
 			const decoder = new TextDecoder();
+
+			options?.onController?.(controller);
 
 			while (true) {
 				// handle time out, will stop if no response in 10 secs
@@ -125,3 +128,33 @@ export async function requestWithPrompt(messages: Message[], prompt: string) {
 
 	return res.choices.at(0)?.message?.content ?? '';
 }
+
+export const ControllerPool = {
+	controllers: {} as Record<string, AbortController>,
+
+	addController(
+		sessionIndex: number,
+		messageIndex: number,
+		controller: AbortController
+	) {
+		const key = this.key(sessionIndex, messageIndex);
+		this.controllers[key] = controller;
+		return key;
+	},
+
+	stop(sessionIndex: number, messageIndex: number) {
+		const key = this.key(sessionIndex, messageIndex);
+		const controller = this.controllers[key];
+		console.log('stop', key, controller);
+		controller?.abort();
+	},
+
+	remove(sessionIndex: number, messageIndex: number) {
+		const key = this.key(sessionIndex, messageIndex);
+		delete this.controllers[key];
+	},
+
+	key(sessionIndex: number, messageIndex: number) {
+		return `${sessionIndex}-${messageIndex}`;
+	},
+};

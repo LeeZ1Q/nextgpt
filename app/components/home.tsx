@@ -25,6 +25,7 @@ import { showModal } from './uilib';
 import { copyToClipboard, downloadAs, selectOrCopy } from '../utils';
 
 import dynamic from 'next/dynamic';
+import { ControllerPool } from '../requests';
 
 const Markdown = dynamic(async () => (await import('./markdown')).Markdown, {
 	loading: () => <LoadingIcon />,
@@ -126,17 +127,26 @@ function useSubmitHandler() {
 export function Chat() {
 	type RenderMessage = Message & { preview?: boolean };
 
-	const session = useChatStore((state) => state.currentSession());
+	const [session, sessionIndex] = useChatStore((state) => [
+		state.currentSession(),
+		state.currentSessionIndex,
+	]);
 	const [userInput, setUserInput] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
 	const { submitKey, shouldSubmit } = useSubmitHandler();
 
 	const onUserInput = useChatStore((state) => state.onUserInput);
+
 	const onUserSubmit = () => {
 		if (userInput.length <= 0) return;
 		setIsLoading(true);
 		onUserInput(userInput).then(() => setIsLoading(false));
 		setUserInput('');
+	};
+
+	const onUserStop = (messageIndex: number) => {
+		console.log(ControllerPool, sessionIndex, messageIndex);
+		ControllerPool.stop(sessionIndex, messageIndex);
 	};
 
 	const onInputKeyDown = (e: KeyboardEvent) => {
@@ -146,7 +156,34 @@ export function Chat() {
 		}
 	};
 
+	const onRightClick = (e: any, message: Message) => {
+		// auto fill user input
+		if (message.role === 'user') {
+			setUserInput(String(message.content));
+		}
+
+		// copy to clipboard
+		if (selectOrCopy(e.currentTarget, String(message.content))) {
+			e.preventDefault();
+		}
+	};
+
+	const onResend = (botIndex: number) => {
+		// find last user input message and resend
+		for (let i = botIndex; i >= 0; i -= 1) {
+			if (messages[i].role === 'user') {
+				setIsLoading(true);
+				onUserInput(String(messages[i].content)).then(() =>
+					setIsLoading(false)
+				);
+				return;
+			}
+		}
+	};
+
 	const latestMessageRef = useRef<HTMLDivElement>(null);
+
+	const [hoveringMessage, setHoveringMessage] = useState(false);
 
 	const messages = (session.messages as RenderMessage[])
 		.concat(
@@ -177,19 +214,14 @@ export function Chat() {
 	useLayoutEffect(() => {
 		setTimeout(() => {
 			const dom = latestMessageRef.current;
-			const rect = dom?.getBoundingClientRect();
-			if (
-				dom &&
-				rect &&
-				rect?.top >= document.documentElement.clientHeight - 200
-			) {
+			if (dom && !hoveringMessage) {
 				dom.scrollIntoView({
 					behavior: 'smooth',
 					block: 'end',
 				});
 			}
 		}, 500);
-	}, [latestMessageRef, messages]);
+	}, [latestMessageRef, messages, hoveringMessage]);
 
 	return (
 		<div
@@ -219,7 +251,15 @@ export function Chat() {
 			</div>
 
 			{/* body */}
-			<div className='mt-2 scl flex-col flex-1 overflow-y-auto'>
+			<div
+				className='mt-2 scl flex-col flex-1 overflow-y-auto'
+				onMouseOver={() => {
+					setHoveringMessage(true);
+				}}
+				onMouseOut={() => {
+					setHoveringMessage(false);
+				}}
+			>
 				{messages.map((message, index) => {
 					const isUser = message.role === 'user';
 
@@ -242,26 +282,46 @@ export function Chat() {
 
 								{/* content */}
 								<div className='mr-8 my-1 flex flex-col'>
+									{!isUser && (
+										<div className='transition-all ease-in-out duration-300 pointer-events-none flex flex-row-reverse text-xs'>
+											{message.streaming ? (
+												<div
+													className='mr-2.5 opacity-50 cursor-pointer hover:opacity-100'
+													onClick={() => onUserStop(index)}
+												>
+													Stop
+												</div>
+											) : (
+												<div
+													className='mr-2.5 opacity-50 cursor-pointe'
+													onClick={() => onResend(index)}
+												>
+													Resend
+												</div>
+											)}
+
+											<div
+												className='mr-2.5 opacity-50 cursor-pointer'
+												onClick={() => copyToClipboard(String(message.content))}
+											>
+												Copy
+											</div>
+										</div>
+									)}
 									{(message.preview || message.content?.length === 0) &&
 									!isUser ? (
 										<LoadingIcon className='h-5 w-5' />
 									) : (
 										<div
 											className='p-2 mb-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-base-100'
-											onContextMenu={(e) => {
-												if (
-													selectOrCopy(e.currentTarget, String(message.content))
-												) {
-													e.preventDefault();
-												}
-											}}
+											onContextMenu={(e) => onRightClick(e, message)}
 										>
 											<Markdown content={String(message.content)} />
 										</div>
 									)}
 									{!isUser && !message.preview && (
 										<div className='ml-2 text-xs text-gray-500 '>
-											{message.date}
+											{message.date.toLocaleString()}
 										</div>
 									)}
 								</div>

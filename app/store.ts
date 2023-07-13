@@ -2,7 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { type ChatCompletionResponseMessage } from 'openai';
-import { requestChatStream, requestWithPrompt } from './requests';
+import {
+	ControllerPool,
+	requestChatStream,
+	requestWithPrompt,
+} from './requests';
 import { trimTopic } from './utils';
 
 export type Message = ChatCompletionResponseMessage & {
@@ -281,6 +285,8 @@ export const useChatStore = create<ChatStore>()(
 				// get last five messges
 				const recentMessages = get().getMessagesWithMemory();
 				const sendMessages = recentMessages.concat(userMessage);
+				const sessionIndex = get().currentSessionIndex;
+				const messageIndex = get().currentSession().messages.length + 1;
 
 				get().updateCurrentSession((session) => {
 					session.messages.push(userMessage);
@@ -294,6 +300,7 @@ export const useChatStore = create<ChatStore>()(
 						if (done) {
 							botMessage.streaming = false;
 							get().onNewMessage(botMessage);
+							ControllerPool.remove(sessionIndex, messageIndex);
 						} else {
 							botMessage.content = content;
 							set(() => ({}));
@@ -303,6 +310,15 @@ export const useChatStore = create<ChatStore>()(
 						botMessage.content += '\n\n出错了，稍后重试吧';
 						botMessage.streaming = false;
 						set(() => ({}));
+						ControllerPool.remove(sessionIndex, messageIndex);
+					},
+					onController(controller) {
+						// collect controller for stop/retry
+						ControllerPool.addController(
+							sessionIndex,
+							messageIndex,
+							controller
+						);
 					},
 					filterBot: !get().config.sendBotMessages,
 					modelConfig: get().config.modelConfig,
