@@ -126,7 +126,7 @@ export async function requestWithPrompt(messages: Message[], prompt: string) {
 
 	const res = await requestChat(messages);
 
-	return res.choices.at(0)?.message?.content ?? '';
+	return res.choices?.at(0)?.message?.content ?? '';
 }
 
 export const ControllerPool = {

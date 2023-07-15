@@ -183,7 +183,7 @@ export function Chat() {
 
 	const latestMessageRef = useRef<HTMLDivElement>(null);
 
-	const [hoveringMessage, setHoveringMessage] = useState(false);
+	const [autoScroll, setAutoScroll] = useState(false);
 
 	const messages = (session.messages as RenderMessage[])
 		.concat(
@@ -214,14 +214,14 @@ export function Chat() {
 	useLayoutEffect(() => {
 		setTimeout(() => {
 			const dom = latestMessageRef.current;
-			if (dom && !hoveringMessage) {
+			if (dom && !autoScroll) {
 				dom.scrollIntoView({
 					behavior: 'smooth',
 					block: 'end',
 				});
 			}
 		}, 500);
-	}, [latestMessageRef, messages, hoveringMessage]);
+	}, [latestMessageRef, messages, autoScroll]);
 
 	return (
 		<div
@@ -251,15 +251,7 @@ export function Chat() {
 			</div>
 
 			{/* body */}
-			<div
-				className='mt-2 scl flex-col flex-1 overflow-y-auto'
-				onMouseOver={() => {
-					setHoveringMessage(true);
-				}}
-				onMouseOut={() => {
-					setHoveringMessage(false);
-				}}
-			>
+			<div className='mt-2 scl flex-col flex-1 overflow-y-auto'>
 				{messages.map((message, index) => {
 					const isUser = message.role === 'user';
 
@@ -347,6 +339,9 @@ export function Chat() {
 						onInput={(e) => setUserInput(e.currentTarget.value)}
 						value={userInput}
 						onKeyDown={(e) => onInputKeyDown(e as any)}
+						onFocus={() => setAutoScroll(true)}
+						onBlur={() => setAutoScroll(false)}
+						autoFocus
 					/>
 					<IconButton
 						className='ml-auto p-0.5 text-sm m-0.5 btn-base bg-base-100 rounded-lg'

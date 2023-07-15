@@ -299,6 +299,7 @@ export const useChatStore = create<ChatStore>()(
 					onMessage(content, done) {
 						if (done) {
 							botMessage.streaming = false;
+							botMessage.content = content;
 							get().onNewMessage(botMessage);
 							ControllerPool.remove(sessionIndex, messageIndex);
 						} else {
@@ -371,7 +372,7 @@ export const useChatStore = create<ChatStore>()(
 					// should summarize topic
 					requestWithPrompt(
 						session.messages,
-						'直接返回这句话的简要主题，不要解释，如果没有主题，请直接返回“闲聊”'
+						'使用四到五个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，如果没有主题，请直接返回“闲聊”'
 					).then((res) => {
 						get().updateCurrentSession(
 							(session) => (session.topic = trimTopic(res))
@@ -394,8 +395,9 @@ export const useChatStore = create<ChatStore>()(
 					);
 				}
 
-				const messages = get().getMessagesWithMemory();
-				const lastSummarizeIndex = messages.length;
+				toBeSummarizedMsgs.unshift(get().getMemoryPrompt());
+
+				const lastSummarizeIndex = session.messages.length;
 
 				console.log(
 					'[Chat History] ',
@@ -416,7 +418,6 @@ export const useChatStore = create<ChatStore>()(
 							filterBot: false,
 							onMessage(message, done) {
 								session.memoryPrompt = message;
-								session.lastSummarizeIndex = lastSummarizeIndex;
 								if (done) {
 									console.log('[Memory] ', session.memoryPrompt);
 									session.lastSummarizeIndex = lastSummarizeIndex;
