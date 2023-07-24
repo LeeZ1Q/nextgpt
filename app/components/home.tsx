@@ -54,7 +54,7 @@ export function ChatItem(props: {
 	return (
 		<div
 			className={`group flex-wrap px-4 py-2  my-1 cursor-pointer rounded-2xl bg-base hover:bg-gray-100 dark:hover:bg-gray-900 ${
-				props.selected ? ' border-2 border-gray-600' : ''
+				props.selected ? ' border-2 border-gray-400 dark:border-gray-600' : ''
 			}`}
 			onClick={props.onClick}
 		>
@@ -316,7 +316,6 @@ export function Chat() {
 											{message.date.toLocaleString()}
 										</div>
 									)}
-									
 								</div>
 							</div>
 						</div>

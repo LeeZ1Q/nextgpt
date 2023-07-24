@@ -36,7 +36,6 @@ export async function requestChat(messages: Message[]) {
 		},
 		body: JSON.stringify(req),
 	});
-
 	return (await res.json()) as ChatReponse;
 }
 
@@ -110,8 +109,8 @@ export async function requestChatStream(
 			options?.onError(new Error('Stream Error'));
 		}
 	} catch (err) {
-		console.error('NetWork Error');
-		options?.onError(new Error('NetWork Error'));
+		console.error('NetWork Error', err);
+		options?.onError(err as Error);
 	}
 }
 
