@@ -54,7 +54,7 @@ export function ChatItem(props: {
 	return (
 		<div
 			className={`group flex-wrap px-4 py-2  my-1 cursor-pointer rounded-2xl bg-base hover:bg-gray-100 dark:hover:bg-gray-900 ${
-				props.selected ? ' border-2 border-slate-400' : ''
+				props.selected ? ' border-2 border-gray-600' : ''
 			}`}
 			onClick={props.onClick}
 		>
@@ -221,7 +221,7 @@ export function Chat() {
 				});
 			}
 		}, 500);
-	}, [latestMessageRef, messages, autoScroll]);
+	});
 
 	return (
 		<div
@@ -274,7 +274,7 @@ export function Chat() {
 
 								{/* content */}
 								<div className='mr-8 my-1 flex flex-col'>
-									{!isUser && (
+									{/* {!isUser && (
 										<div className='transition-all ease-in-out duration-300 pointer-events-none flex flex-row-reverse text-xs'>
 											{message.streaming ? (
 												<div
@@ -285,7 +285,7 @@ export function Chat() {
 												</div>
 											) : (
 												<div
-													className='mr-2.5 opacity-50 cursor-pointe'
+													className='mr-2.5 opacity-50 cursor-pointer'
 													onClick={() => onResend(index)}
 												>
 													Resend
@@ -299,7 +299,7 @@ export function Chat() {
 												Copy
 											</div>
 										</div>
-									)}
+									)} */}
 									{(message.preview || message.content?.length === 0) &&
 									!isUser ? (
 										<LoadingIcon className='h-5 w-5' />
@@ -316,6 +316,7 @@ export function Chat() {
 											{message.date.toLocaleString()}
 										</div>
 									)}
+									
 								</div>
 							</div>
 						</div>
@@ -333,7 +334,7 @@ export function Chat() {
 			<div className='flex flex-col items-center px-4 py-2 border-t-2 rounded-md border-gray-200 dark:border-gray-700'>
 				<div className='w-full flex-wrap'>
 					<textarea
-						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none textc-base bg-base border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring focus:ring-slate-400'
+						className=' min-h-[96px] mt-2 scrollbar-none w-full p-2 resize-none textc-base bg-base border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-500'
 						placeholder={`请输入消息, ${submitKey} 发送`}
 						rows={3}
 						onInput={(e) => setUserInput(e.currentTarget.value)}
