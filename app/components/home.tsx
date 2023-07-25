@@ -61,7 +61,7 @@ export function ChatItem(props: {
 			<div className='flex'>
 				<div className='textc-base h-6'>{props.title}</div>
 				<CloseIcon
-					className='m-1 h-4 w-4 opacity-0 group-hover:opacity-100 ml-auto btn-base hover:text-zinc-400 dark:hover:text-stone-300'
+					className='my-1 h-4 w-4 opacity-0 group-hover:opacity-100 ml-auto btn-base hover:text-zinc-400 dark:hover:text-stone-300'
 					onClick={props.onDelete}
 				/>
 			</div>
@@ -258,7 +258,7 @@ export function Chat() {
 					return (
 						<div
 							key={index}
-							className='flex flex-col mb-2'
+							className='flex flex-col mb-2 first:mt-2'
 						>
 							{/* container */}
 							<div className='flex items-start'>
@@ -273,33 +273,8 @@ export function Chat() {
 								</div>
 
 								{/* content */}
-								<div className='mr-8 my-1 flex flex-col'>
-									{/* {!isUser && (
-										<div className='transition-all ease-in-out duration-300 pointer-events-none flex flex-row-reverse text-xs'>
-											{message.streaming ? (
-												<div
-													className='mr-2.5 opacity-50 cursor-pointer hover:opacity-100'
-													onClick={() => onUserStop(index)}
-												>
-													Stop
-												</div>
-											) : (
-												<div
-													className='mr-2.5 opacity-50 cursor-pointer'
-													onClick={() => onResend(index)}
-												>
-													Resend
-												</div>
-											)}
-
-											<div
-												className='mr-2.5 opacity-50 cursor-pointer'
-												onClick={() => copyToClipboard(String(message.content))}
-											>
-												Copy
-											</div>
-										</div>
-									)} */}
+								<div className='mr-10 my-1 flex flex-col'>
+								
 									{(message.preview || message.content?.length === 0) &&
 									!isUser ? (
 										<LoadingIcon className='h-5 w-5' />
@@ -316,7 +291,34 @@ export function Chat() {
 											{message.date.toLocaleString()}
 										</div>
 									)}
+									
+									{/* <div className='transition-all ease-in-out duration-300 pointer-events-none flex flex-row-reverse text-xs'>
+										{message.streaming ? (
+											<div
+												className='mr-2.5 opacity-50 cursor-pointer hover:opacity-100'
+												onClick={() => onUserStop(index)}
+											>
+												Stop
+											</div>
+										) : (
+											<div
+												className='mr-2.5 opacity-50 cursor-pointer'
+												onClick={() => onResend(index)}
+											>
+												Resend
+											</div>
+										)}
+
+										<div
+											className='mr-2.5 opacity-50 cursor-pointer'
+											onClick={() => copyToClipboard(String(message.content))}
+										>
+											Copy
+										</div>
+								</div> */}
+									
 								</div>
+
 							</div>
 						</div>
 					);
@@ -356,21 +358,17 @@ export function Chat() {
 
 function exportMessages(messages: Message[], topic: string) {
 	const mdText =
-		`# ${topic}\n\n` +
+		`**${topic}**\n\n` +
 		messages
 			.map((m) => {
-				return m.role === 'user' ? `## ${m.content}` : m.content?.trim();
+				return m.role === 'user' ? `**${m.content}**` : m.content?.trim();
 			})
 			.join('\n\n');
 	const filename = `${topic}.md`;
 
 	showModal({
 		title: '导出聊天记录为 Markdown',
-		children: (
-			<div className='prose-base'>
-				<pre className='whitespace-break-spaces'>{mdText}</pre>
-			</div>
-		),
+		children: <Markdown content={String(mdText)} />,
 		actions: [
 			<IconButton
 				key='copy'

@@ -374,7 +374,6 @@ export const useChatStore = create<ChatStore>()(
 						session.messages,
 						'使用四到五个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，如果没有主题，请直接返回“闲聊”'
 					).then((res) => {
-						console.log('[Chat Topic]: Response', res);
 						get().updateCurrentSession(
 							(session) => (session.topic = trimTopic(res))
 						);

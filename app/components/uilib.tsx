@@ -42,8 +42,8 @@ interface ModalProps {
 }
 export function Modal(props: ModalProps) {
 	return (
-		<div className='w-[50vw] rounded-xl bg-base border-2 border-gray-200 dark:border-gray-700'>
-			<div className='p-5 flex items-center justify-between'>
+		<div className='w-[40vw] rounded-xl bg-base border-2 border-gray-200 dark:border-gray-700'>
+			<div className='border-b-2  border-gray-200 dark:border-gray-700 rounded-md p-5 flex items-center justify-between'>
 				<div className='font-bold'>{props.title}</div>
 
 				<div
@@ -54,13 +54,15 @@ export function Modal(props: ModalProps) {
 				</div>
 			</div>
 
-			<div className='max-h-[40vh] p-5 overflow-auto scl'>{props.children}</div>
+			<div className='max-h-[40vh] px-5 overflow-auto scl'>
+				{props.children}
+			</div>
 
-			<div className='p-2 flex justify-end'>
+			<div className='border-t-2  border-gray-200 dark:border-gray-700 rounded-md p-2 flex justify-end'>
 				<div className='flex items-center'>
 					{props.actions?.map((action, i) => (
 						<div
-							className='!mr-20'
+							className='mx-5'
 							key={i}
 						>
 							{action}
@@ -74,7 +76,8 @@ export function Modal(props: ModalProps) {
 
 export function showModal(props: ModalProps) {
 	const div = document.createElement('div');
-	div.className = 'fixed top-0 left-0 bottom-0 right-0 z-50 flex items-center justify-center';
+	div.className =
+		'fixed top-0 left-0 bottom-0 right-0 z-50 flex items-center justify-center';
 	document.body.appendChild(div);
 
 	const root = createRoot(div);

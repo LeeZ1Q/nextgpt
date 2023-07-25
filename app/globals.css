@@ -18,5 +18,5 @@
 	@apply scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-slate-50 dark:scrollbar-thumb-gray-900 dark:scrollbar-track-slate-950;
 }
 .prose-base {
-	@apply prose prose-ol:m-1 prose-li:m-0.5 prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-p:m-1 prose-pre:m-0 textc-base prose-code:text-zinc-600 dark:prose-code:text-neutral-200 prose-pre:scrollbar-thin dark:prose-pre:scrollbar-thumb-gray-700 dark:prose-pre:scrollbar-track-slate-800 prose-pre:scrollbar-thumb-gray-200 prose-pre:scrollbar-track-slate-50;
+	@apply prose prose-ol:m-1 prose-li:m-0.5 prose-strong:text-zinc-600 dark:prose-strong:text-neutral-200 prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-p:m-1 prose-pre:m-0 textc-base prose-code:text-zinc-600 dark:prose-code:text-neutral-200 prose-pre:scrollbar-thin dark:prose-pre:scrollbar-thumb-gray-700 dark:prose-pre:scrollbar-track-slate-800 prose-pre:scrollbar-thumb-gray-200 prose-pre:scrollbar-track-slate-50;
 }
